@@ -1,0 +1,60 @@
+name: Fast HTML Render (1080p 60fps)
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'inputs/**'
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Timecut
+        run: npm install -g timecut
+
+      - name: Create Output Folder
+        run: mkdir -p output
+
+      - name: Render All HTML Files
+        run: |
+          shopt -s nullglob
+          files=(inputs/*.html *.html)
+
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "لم يتم العثور على أي ملفات HTML!"
+            exit 1
+          fi
+
+          echo "تم العثور على ${#files[@]} ملفاً، بدء التصدير..."
+
+          for f in "${files[@]}"; do
+            filename=$(basename "$f" .html)
+            echo "=============================="
+            echo "جاري تصدير الفيديو: $filename"
+            echo "=============================="
+            
+            # تشغيل timecut باستخدام متصفح جوجل كروم المثبت في السيرفر
+            timecut "$PWD/$f" \
+              --output="$PWD/output/${filename}.mp4" \
+              --executable-path="/usr/bin/google-chrome" \
+              --viewport=1920,1080 \
+              --fps=60 \
+              --duration=10 \
+              --puppeteer-args="--no-sandbox --disable-setuid-sandbox --disable-dev-shm-usage --disable-gpu"
+          done
+
+      - name: Upload Videos ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: all-videos-1080p-60fps
+          path: output/*.mp4
+          if-no-files-found: error
