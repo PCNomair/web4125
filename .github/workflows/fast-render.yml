@@ -21,6 +21,17 @@ jobs:
       - name: Setup FFmpeg
         uses: FedericoCarboni/setup-ffmpeg@v3
 
+      # تثبيت حزم الخطوط الأساسية والخطوط العربية في نظام السيرفر
+      - name: Install System Fonts
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            fonts-noto-core \
+            fonts-noto-arabic \
+            fonts-noto-extra \
+            fonts-dejavu-core
+          sudo fc-cache -f -v
+
       - name: Install Timecut
         run: npm install -g timecut
 
@@ -33,17 +44,28 @@ jobs:
           files=(inputs/*.html *.html)
 
           if [ ${#files[@]} -eq 0 ]; then
-            echo "لم يتم العثور على أي ملفات HTML!"
+            echo "خطأ: لم يتم العثور على أي ملفات HTML داخل inputs!"
             exit 1
           fi
+
+          # حقن خط عربي حديث (Cairo) تلقائياً في كل الملفات لضمان عدم تغير الخط
+          echo "جاري تجهيز الخطوط في الملفات..."
+          FONT_TAG='<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;800;900\&display=swap"><style>*{font-family:"Cairo",sans-serif !important;}</style>'
+          for f in "${files[@]}"; do
+            if grep -q "<head>" "$f"; then
+              sed -i "s|<head>|<head>${FONT_TAG}|g" "$f"
+            else
+              sed -i "1s|^|${FONT_TAG}|" "$f"
+            fi
+          done
 
           echo "تم العثور على ${#files[@]} ملفاً، بدء التصدير..."
 
           for f in "${files[@]}"; do
             filename=$(basename "$f" .html)
-            echo "=============================="
+            echo "========================================"
             echo "جاري تصدير الفيديو: $filename"
-            echo "=============================="
+            echo "========================================"
             
             timecut "$PWD/$f" \
               --output="$PWD/output/${filename}.mp4" \
@@ -51,6 +73,7 @@ jobs:
               --viewport=1920,1080 \
               --fps=60 \
               --duration=10 \
+              --start-delay=2 \
               --puppeteer-args="--no-sandbox --disable-setuid-sandbox --disable-dev-shm-usage --disable-gpu"
           done
 
