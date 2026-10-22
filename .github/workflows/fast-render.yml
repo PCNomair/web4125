@@ -21,12 +21,22 @@ jobs:
       - name: Setup FFmpeg
         uses: FedericoCarboni/setup-ffmpeg@v3
 
-      # تثبيت أي خطوط محلية يضعها المستخدم في مجلد fonts داخل المستودع
-      - name: Install Local Fonts If Present
+      # تثبيت خطوط النظام الحرة لتفادي الأخطاء التي ظهرت سابقاً
+      - name: Install System Fonts
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            fonts-dejavu-core \
+            fonts-freefont-ttf \
+            fonts-kacst
+          fc-cache -f
+
+      # تثبيت أي خطوط يدوية تضعها في مجلد fonts
+      - name: Install Custom Local Fonts If Present
         run: |
           mkdir -p ~/.local/share/fonts
           if [ -d "fonts" ]; then
-            echo "جاري تثبيت الخطوط من مجلد fonts..."
+            echo "جاري تحميل وتثبيت الخطوط المخصصة..."
             cp fonts/*.ttf ~/.local/share/fonts/ 2>/dev/null || true
             cp fonts/*.otf ~/.local/share/fonts/ 2>/dev/null || true
             fc-cache -f
@@ -41,14 +51,18 @@ jobs:
       - name: Render All HTML Files
         run: |
           shopt -s nullglob
-          files=(inputs/*.html *.html)
+          # البحث أولاً في inputs ثم في المجلد الرئيسي كخيار بديل
+          files=(inputs/*.html)
+          if [ ${#files[@]} -eq 0 ]; then
+            files=(*.html)
+          fi
 
           if [ ${#files[@]} -eq 0 ]; then
-            echo "خطأ: لم يتم العثور على أي ملفات HTML داخل inputs!"
+            echo "خطأ: لم يتم العثور على أي ملفات HTML!"
             exit 1
           fi
 
-          echo "تم العثور على ${#files[@]} ملفاً، بدء التصدير بالخطوط الأصلية..."
+          echo "تم العثور على ${#files[@]} ملفاً، بدء التصدير..."
 
           for f in "${files[@]}"; do
             filename=$(basename "$f" .html)
@@ -62,7 +76,7 @@ jobs:
               --viewport=1920,1080 \
               --fps=60 \
               --duration=10 \
-              --start-delay=4 \
+              --start-delay=1 \
               --puppeteer-args="--no-sandbox --disable-setuid-sandbox --disable-dev-shm-usage --disable-gpu"
           done
 
