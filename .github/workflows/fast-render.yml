@@ -18,6 +18,9 @@ jobs:
         with:
           node-version: 22
 
+      - name: Setup FFmpeg
+        uses: FedericoCarboni/setup-ffmpeg@v3
+
       - name: Install Timecut
         run: npm install -g timecut
 
@@ -42,7 +45,6 @@ jobs:
             echo "جاري تصدير الفيديو: $filename"
             echo "=============================="
             
-            # تشغيل timecut باستخدام متصفح جوجل كروم المثبت في السيرفر
             timecut "$PWD/$f" \
               --output="$PWD/output/${filename}.mp4" \
               --executable-path="/usr/bin/google-chrome" \
