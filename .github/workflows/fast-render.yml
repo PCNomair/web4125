@@ -21,16 +21,16 @@ jobs:
       - name: Setup FFmpeg
         uses: FedericoCarboni/setup-ffmpeg@v3
 
-      # تثبيت حزم الخطوط الأساسية والخطوط العربية في نظام السيرفر
-      - name: Install System Fonts
+      # تثبيت أي خطوط محلية يضعها المستخدم في مجلد fonts داخل المستودع
+      - name: Install Local Fonts If Present
         run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends \
-            fonts-noto-core \
-            fonts-noto-arabic \
-            fonts-noto-extra \
-            fonts-dejavu-core
-          sudo fc-cache -f -v
+          mkdir -p ~/.local/share/fonts
+          if [ -d "fonts" ]; then
+            echo "جاري تثبيت الخطوط من مجلد fonts..."
+            cp fonts/*.ttf ~/.local/share/fonts/ 2>/dev/null || true
+            cp fonts/*.otf ~/.local/share/fonts/ 2>/dev/null || true
+            fc-cache -f
+          fi
 
       - name: Install Timecut
         run: npm install -g timecut
@@ -48,18 +48,7 @@ jobs:
             exit 1
           fi
 
-          # حقن خط عربي حديث (Cairo) تلقائياً في كل الملفات لضمان عدم تغير الخط
-          echo "جاري تجهيز الخطوط في الملفات..."
-          FONT_TAG='<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;800;900\&display=swap"><style>*{font-family:"Cairo",sans-serif !important;}</style>'
-          for f in "${files[@]}"; do
-            if grep -q "<head>" "$f"; then
-              sed -i "s|<head>|<head>${FONT_TAG}|g" "$f"
-            else
-              sed -i "1s|^|${FONT_TAG}|" "$f"
-            fi
-          done
-
-          echo "تم العثور على ${#files[@]} ملفاً، بدء التصدير..."
+          echo "تم العثور على ${#files[@]} ملفاً، بدء التصدير بالخطوط الأصلية..."
 
           for f in "${files[@]}"; do
             filename=$(basename "$f" .html)
@@ -73,7 +62,7 @@ jobs:
               --viewport=1920,1080 \
               --fps=60 \
               --duration=10 \
-              --start-delay=2 \
+              --start-delay=4 \
               --puppeteer-args="--no-sandbox --disable-setuid-sandbox --disable-dev-shm-usage --disable-gpu"
           done
 
