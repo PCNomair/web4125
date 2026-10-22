@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Anti-Gravity Cone Illusion - Seamless Loop</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background-color: #06070a;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      overflow: hidden;
+    }
+    .video-frame {
+      width: 100vw;
+      max-width: calc(100vh * (9 / 16));
+      height: 100vh;
+      max-height: calc(100vw * (16 / 9));
+      background-color: #08090d;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.85);
+    }
+    svg.canvas {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+    .rail-line {
+      stroke: #ffffff;
+      stroke-width: 6;
+      stroke-linecap: round;
+      filter: drop-shadow(0 0 10px rgba(255,255,255,0.3));
+    }
+    .support-pillar {
+      stroke: rgba(255, 255, 255, 0.2);
+      stroke-width: 3;
+      stroke-dasharray: 6 6;
+    }
+    .cone-body {
+      fill: #ff007f;
+      stroke: #ffffff;
+      stroke-width: 2.5;
+      filter: drop-shadow(0 0 22px rgba(255, 0, 127, 0.55));
+    }
+    .com-marker {
+      fill: #00f5d4;
+      filter: drop-shadow(0 0 12px #00f5d4);
+    }
+    .com-trajectory {
+      fill: none;
+      stroke: #00f5d4;
+      stroke-width: 3;
+      stroke-dasharray: 6 6;
+      opacity: 0;
+    }
+    .meta-title {
+      font-size: 20px;
+      font-weight: 700;
+      fill: #ffffff;
+      letter-spacing: 2px;
+      opacity: 0.85;
+    }
+    .badge-label {
+      font-family: -apple-system, monospace;
+      font-size: 15px;
+      font-weight: 700;
+      fill: #ff007f;
+      letter-spacing: 1px;
+    }
+    .captions-box {
+      position: absolute;
+      bottom: 11%;
+      left: 0;
+      width: 100%;
+      text-align: center;
+      padding: 0 24px;
+      z-index: 10;
+      pointer-events: none;
+    }
+    .caption-item {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      opacity: 0;
+      transform: translateY(14px);
+      transition: opacity 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    .caption-item.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .ar-text {
+      font-size: clamp(22px, 3.8vw, 35px);
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1.4;
+      margin-bottom: 6px;
+      letter-spacing: -0.5px;
+      text-shadow: 0 2px 14px rgba(0,0,0,0.9);
+    }
+    .en-text {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-style: italic;
+      font-size: clamp(13px, 2.2vw, 19px);
+      color: #929bb0;
+      direction: ltr;
+      display: inline-block;
+    }
+  </style>
+</head>
+<body>
+<div class="video-frame" id="stage">
+  <svg class="canvas" viewBox="0 0 1080 1920">
+    <text x="540" y="430" text-anchor="middle" class="meta-title">THE ANTI-GRAVITY ILLUSION</text>
+    <text x="540" y="465" text-anchor="middle" class="badge-label" id="statusBadge">APPARENT UPHILL MOTION</text>
+
+    <!-- Support Pillars showing slope -->
+    <line x1="220" y1="960" x2="220" y2="1140" class="support-pillar" />
+    <line x1="860" y1="780" x2="860" y2="1140" class="support-pillar" />
+    <line x1="200" y1="1140" x2="880" y2="1140" stroke="rgba(255,255,255,0.2)" stroke-width="2" />
+    <text x="220" y="1180" text-anchor="middle" font-size="16" fill="#888">نقطة البداية المنخفضة</text>
+    <text x="860" y="1180" text-anchor="middle" font-size="16" fill="#888">نقطة النهاية المرتفعة</text>
+
+    <!-- Diverging V-Rails in Perspective -->
+    <line x1="220" y1="960" x2="860" y2="740" class="rail-line" id="railTop" />
+    <line x1="220" y1="960" x2="860" y2="840" class="rail-line" id="railBottom" />
+
+    <!-- Actual Center of Mass Fall Guide -->
+    <path id="comPath" class="com-trajectory" d="M 220 830 L 860 885" />
+    <text id="comLabel" x="540" y="930" text-anchor="middle" font-size="16" font-weight="700" fill="#00f5d4" opacity="0">مركز الثقل ينحدر نحو الأسفل فعلياً</text>
+
+    <!-- Double Cone Assembly -->
+    <g id="coneRig" transform="translate(220, 830)">
+      <polygon id="coneLeft" points="0,-130 -140,0 0,130" class="cone-body" />
+      <polygon id="coneRight" points="0,-130 140,0 0,130" class="cone-body" fill="#d9006c" />
+      <circle cx="0" cy="0" r="10" class="com-marker" />
+      <line x1="-140" y1="0" x2="140" y2="0" stroke="#ffffff" stroke-width="2" stroke-dasharray="4 4" />
+    </g>
+  </svg>
+
+  <div class="captions-box">
+    <div class="caption-item active" id="c0">
+      <div class="ar-text">صاحب هالحساب عم يستغفل عقلك: بقلك هالمخروط عم يتدحرج لطلوع!</div>
+      <div class="en-text">The creator is fooling you, claiming this cone rolls uphill!</div>
+    </div>
+    <div class="caption-item" id="c1">
+      <div class="ar-text">وللوهلة الأولى... عنجد مبين عم يكسر قوانين نيوتن والفيزياء!</div>
+      <div class="en-text">At first glance... it truly seems to defy Newton's laws!</div>
+    </div>
+    <div class="caption-item" id="c2">
+      <div class="ar-text">بس الحقيقة؟ السكتين عم يتباعدوا، فمركز ثقله عم ينزل لتحت!</div>
+      <div class="en-text">The truth? Diverging rails cause its center of mass to drop!</div>
+    </div>
+    <div class="caption-item" id="c3">
+      <div class="ar-text">عينك انخدعت بارتفاع السكة، بينما الجاذبية عم تسحب الكتلة للأسفل!</div>
+      <div class="en-text">Your eyes tracked the rails, but gravity strictly pulled it downward!</div>
+    </div>
+    <div class="caption-item" id="c4">
+      <div class="ar-text">فقبل ما تظن إنك شفت معجزة، تذكر منيح إن...</div>
+      <div class="en-text">Before you assume you witnessed a miracle, remember...</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const coneRig = document.getElementById('coneRig');
+  const comPath = document.getElementById('comPath');
+  const comLabel = document.getElementById('comLabel');
+  const statusBadge = document.getElementById('statusBadge');
+
+  const totalDuration = 16.0;
+
+  const captions = [
+    { start: 0.0, end: 3.2, el: document.getElementById('c0') },
+    { start: 3.2, end: 6.2, el: document.getElementById('c1') },
+    { start: 6.2, end: 10.0, el: document.getElementById('c2') },
+    { start: 10.0, end: 13.5, el: document.getElementById('c3') },
+    { start: 13.5, end: 16.0, el: document.getElementById('c4') }
+  ];
+
+  function seekTo(sec) {
+    const t = ((sec % totalDuration) + totalDuration) % totalDuration;
+
+    captions.forEach(c => {
+      if (t >= c.start && t < c.end) c.el.classList.add('active');
+      else c.el.classList.remove('active');
+    });
+
+    // 0.0 - 5.5: Rolls "uphill" from x=220 to x=860
+    // 5.5 - 9.8: Reveals the downward laser path of Center of Mass (CoM)
+    // 9.8 - 13.5: Explanatory hold
+    // 13.5 - 16.0: Smooth rewind to x=220 for a seamless loop
+    let progress = 0;
+    if (t < 5.5) {
+      progress = (t / 5.5);
+      statusBadge.textContent = 'ILLUSION: ROLLING UPHILL';
+      statusBadge.style.fill = '#ff007f';
+      comPath.style.opacity = '0';
+      comLabel.style.opacity = '0';
+    } else if (t < 13.5) {
+      progress = 1.0;
+      statusBadge.textContent = 'PHYSICS: CENTER OF MASS FALLS';
+      statusBadge.style.fill = '#00f5d4';
+      comPath.style.opacity = '1';
+      comLabel.style.opacity = '1';
+    } else {
+      const p = (t - 13.5) / 2.5;
+      const ease = 0.5 + 0.5 * Math.cos(p * Math.PI);
+      progress = ease;
+      statusBadge.textContent = 'SEAMLESS RESET';
+      statusBadge.style.fill = '#ffb703';
+      comPath.style.opacity = '0';
+      comLabel.style.opacity = '0';
+    }
+
+    // Geometry Calculation:
+    // Left x=220: Rail is narrow (width=0), rests on widest cone radius (R=130), CoM Y = 960 - 130 = 830
+    // Right x=860: Rail height average = 790, rail width = 100.
+    // The cone drops inside the rails by radius delta, putting CoM Y at 885 (55px lower!)
+    const currentX = 220 + (860 - 220) * progress;
+    const currentY = 830 + (885 - 830) * progress;
+    const scale = 1.0 - 0.15 * progress;
+
+    coneRig.setAttribute('transform', `translate(${currentX}, ${currentY}) scale(${scale})`);
+  }
+
+  let startTime = null;
+  function render(timestamp) {
+    if (!startTime) startTime = timestamp;
+    let elapsed = (timestamp - startTime) / 1000;
+    seekTo(elapsed % totalDuration);
+    requestAnimationFrame(render);
+  }
+  requestAnimationFrame(render);
+  window.seekTo = seekTo;
+</script>
+</body>
+</html>
