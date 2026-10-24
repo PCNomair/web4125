@@ -74,3 +74,43 @@ jobs:
       - name: Render
         env:
           OVERWRITE: "1"
+        run: npm run render
+
+      - name: Rename scene-*.mp4 → <name>.mp4
+        run: |
+          shopt -s nullglob
+          for f in out/scene-*.mp4; do
+            mv -v "$f" "out/${f#out/scene-}"
+          done
+          ls -lh out/
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: videos-${{ github.run_number }}
+          path: out/*.mp4
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Verify size / fps / duration / motion
+        run: node scripts/verify-output.mjs out
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="render-${GITHUB_RUN_NUMBER}"
+          {
+            echo "Rendered from \`${GITHUB_SHA:0:7}\`."
+            echo ""
+            echo "**1080 × 1920 · 60 fps · 25 s · H.264**"
+            echo ""
+            echo "| File | Size |"
+            echo "| --- | --- |"
+            for f in out/*.mp4; do
+              [ -e "$f" ] || continue
+              printf '| `%s` | %s |\n' "$(basename "$f")" "$(du -h "$f" | cut -f1)"
+            done
+          } > notes.md
+          gh release create "$TAG" out/*.mp4 --title "Rendered videos $TAG" --notes-file notes.md --target "$GITHUB_SHA" \
+            || gh release upload "$TAG" out/*.mp4 --clobber
