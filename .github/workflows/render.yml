@@ -1,30 +1,12 @@
-# ============================================================================
-#  PASTE THIS FILE AS:  .github/workflows/render.yml
-#
-#  GitHub web UI → repo → "Add file" → "Create new file" →
-#  type exactly:  .github/workflows/render.yml   → paste this → Commit.
-#
-#  (The .github folder is hidden on your computer, which is why drag-and-drop
-#   upload skipped it. Creating the path by hand works every time.)
-# ============================================================================
-name: Render HTML → MP4 (1080x1920 · 60fps · 25s)
+name: Render HTML → MP4
 
-# Upload an .html file to inputs/ → get <name>.mp4 in Releases + Artifacts.
+# ارفع ملف .html إلى inputs/ → تحصل على 1.mp4 في Releases + Artifacts.
 on:
   workflow_dispatch:
-    inputs:
-      only:
-        description: "Render only these files (comma separated, e.g. 1). Empty = all."
-        required: false
-        default: ""
-      publish_release:
-        description: "Attach the MP4s to a GitHub Release"
-        type: boolean
-        default: true
   push:
     paths:
       - "inputs/**"
-      - "public/scenes/**"
+      - "fonts/**"
       - "src/**"
       - "scripts/**"
       - "video.config.json"
@@ -39,38 +21,56 @@ concurrency:
 permissions:
   contents: write
 
-env:
-  NODE_VERSION: "20"
-
 jobs:
-  # 1 ─ Find the HTML files once, then fan out: 1 file = 1 parallel runner.
-  plan:
-    name: Plan
+  render:
+    name: Render
     runs-on: ubuntu-latest
-    outputs:
-      matrix: ${{ steps.plan.outputs.matrix }}
-      count: ${{ steps.plan.outputs.count }}
-      publish: ${{ steps.flags.outputs.publish }}
+    timeout-minutes: 40
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: "22"
           cache: npm
 
-      - run: npm ci --no-audit --no-fund
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
 
-      # inputs/ is your upload folder. Remotion can only serve files from
-      # public/, so mirror inputs/ → public/scenes/ (never commits anything).
+      - name: Browser libraries & fonts
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq --no-install-recommends \
+            libnspr4 libnss3 libatk1.0-0t64 libatk-bridge2.0-0t64 libcups2t64 libdrm2 \
+            libxkbcommon0 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 \
+            libpango-1.0-0 libcairo2 libasound2t64 libfontconfig1 \
+            fonts-liberation fonts-dejavu-core fonts-noto-core || true
+
+      - name: Cache headless browser
+        uses: actions/cache@v4
+        with:
+          path: node_modules/.remotion
+          key: remotion-browser-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      - name: Ensure headless browser
+        run: npx remotion browser ensure
+
+      # Remotion can only serve files from public/, so mirror the upload folder.
       - name: Mirror inputs/ → public/scenes/
         run: |
           mkdir -p public/scenes
-          if compgen -G "inputs/**/*.html" > /dev/null || compgen -G "inputs/*.html" > /dev/null; then
+          if [ -n "$(find inputs -name '*.html' -print -quit 2>/dev/null)" ]; then
             cp -r inputs/. public/scenes/
             rm -rf public/scenes/audio
-            # If you upload real files, the sample demo.html is dropped so you
-            # get exactly one video per uploaded file.
             rm -f public/scenes/demo.html
           fi
           if [ -d inputs/audio ]; then
+            mkdir -p public/audio
+            cp -r inputs/audio/. public/audio/
+          fi
+          echo "HTML files that will be rendered:"
+          find public/scenes -name '*.html' | sort
+
+      - name: Render
+        env:
+          OVERWRITE: "1"
