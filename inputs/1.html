@@ -1,252 +1,185 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Anti-Gravity Cone Illusion - Seamless Loop</title>
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-    body {
-      background-color: #06070a;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      overflow: hidden;
-    }
-    .video-frame {
-      width: 100vw;
-      max-width: calc(100vh * (9 / 16));
-      height: 100vh;
-      max-height: calc(100vw * (16 / 9));
-      background-color: #08090d;
-      position: relative;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.85);
-    }
-    svg.canvas {
-      width: 100%;
-      height: 100%;
-      position: absolute;
-      top: 0;
-      left: 0;
-    }
-    .rail-line {
-      stroke: #ffffff;
-      stroke-width: 6;
-      stroke-linecap: round;
-      filter: drop-shadow(0 0 10px rgba(255,255,255,0.3));
-    }
-    .support-pillar {
-      stroke: rgba(255, 255, 255, 0.2);
-      stroke-width: 3;
-      stroke-dasharray: 6 6;
-    }
-    .cone-body {
-      fill: #ff007f;
-      stroke: #ffffff;
-      stroke-width: 2.5;
-      filter: drop-shadow(0 0 22px rgba(255, 0, 127, 0.55));
-    }
-    .com-marker {
-      fill: #00f5d4;
-      filter: drop-shadow(0 0 12px #00f5d4);
-    }
-    .com-trajectory {
-      fill: none;
-      stroke: #00f5d4;
-      stroke-width: 3;
-      stroke-dasharray: 6 6;
-      opacity: 0;
-    }
-    .meta-title {
-      font-size: 20px;
-      font-weight: 700;
-      fill: #ffffff;
-      letter-spacing: 2px;
-      opacity: 0.85;
-    }
-    .badge-label {
-      font-family: -apple-system, monospace;
-      font-size: 15px;
-      font-weight: 700;
-      fill: #ff007f;
-      letter-spacing: 1px;
-    }
-    .captions-box {
-      position: absolute;
-      bottom: 11%;
-      left: 0;
-      width: 100%;
-      text-align: center;
-      padding: 0 24px;
-      z-index: 10;
-      pointer-events: none;
-    }
-    .caption-item {
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      opacity: 0;
-      transform: translateY(14px);
-      transition: opacity 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
-    }
-    .caption-item.active {
-      opacity: 1;
-      transform: translateY(0);
-    }
-    .ar-text {
-      font-size: clamp(22px, 3.8vw, 35px);
-      font-weight: 700;
-      color: #ffffff;
-      line-height: 1.4;
-      margin-bottom: 6px;
-      letter-spacing: -0.5px;
-      text-shadow: 0 2px 14px rgba(0,0,0,0.9);
-    }
-    .en-text {
-      font-family: Georgia, 'Times New Roman', serif;
-      font-style: italic;
-      font-size: clamp(13px, 2.2vw, 19px);
-      color: #929bb0;
-      direction: ltr;
-      display: inline-block;
-    }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#fff8f5">
+<title>صفاء | قوليها طبيعي — الحلقة 01</title>
+<style>
+  :root {
+    --cream: #fff8f4;
+    --pink: #e7a8b8;
+    --pink-deep: #c87991;
+    --plum: #503747;
+    --butter: #f6dfaa;
+    --sage: #a8b8a2;
+    --ink-soft: #806d78;
+    --paper: #fffdfb;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; background: #f0e4e5; }
+  body {
+    display: grid;
+    place-items: center;
+    font-family: Tahoma, Arial, sans-serif;
+    color: var(--plum);
+    overflow: hidden;
+  }
+  .reel {
+    position: relative;
+    width: min(100vw, 56.25vh);
+    height: min(177.7778vw, 100vh);
+    aspect-ratio: 9 / 16;
+    overflow: hidden;
+    isolation: isolate;
+    background: var(--cream);
+  }
+  .wash {
+    position: absolute;
+    z-index: -2;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 100% 9%, rgba(231,168,184,.22) 0 17%, transparent 17.5%),
+      radial-gradient(ellipse at 3% 86%, rgba(246,223,170,.34) 0 18%, transparent 18.5%),
+      var(--cream);
+  }
+  .grain {
+    position: absolute; inset: 0; z-index: -1; pointer-events: none; opacity: .18;
+    background-image: radial-gradient(#c9a7b1 .6px, transparent .6px);
+    background-size: 8px 8px;
+  }
+  .top {
+    position: absolute; top: 5.2%; left: 7%; right: 7%;
+    display: flex; align-items: center; justify-content: space-between;
+    direction: ltr;
+  }
+  .brand { display: flex; gap: 8px; align-items: center; direction: rtl; }
+  .flower-mark { width: 28px; height: 28px; flex: 0 0 auto; }
+  .brand-copy { display: grid; gap: 1px; }
+  .brand-name { font-size: 15px; font-weight: 800; letter-spacing: -.3px; }
+  .brand-sub { font-size: 8px; letter-spacing: 1.2px; color: var(--ink-soft); direction: ltr; }
+  .episode-pill {
+    border: 1px solid rgba(80,55,71,.16); border-radius: 999px; padding: 7px 10px;
+    color: var(--ink-soft); background: rgba(255,253,251,.72); font-size: 10px; font-weight: 700;
+  }
+  .progress { position: absolute; top: 10.5%; left: 7%; right: 7%; display: flex; gap: 4px; direction: ltr; }
+  .progress span { height: 3px; flex: 1; border-radius: 99px; background: rgba(80,55,71,.12); overflow: hidden; }
+  .progress span i { display:block; height:100%; width:0; border-radius:99px; background:var(--pink-deep); }
+  .progress span.done i { width:100%; }
+  .progress span.active i { width:100%; transition: width 4.4s linear; }
+  .stage {
+    position: absolute; left: 7%; right: 7%; top: 16%; bottom: 14%;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; gap: 18px;
+  }
+  .scene { width: 100%; animation: arrive .65s cubic-bezier(.2,.75,.25,1) both; }
+  @keyframes arrive { from { opacity:0; transform: translateY(15px) scale(.985); } to { opacity:1; transform:translateY(0) scale(1); } }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 7px; border-radius: 999px;
+    padding: 8px 13px; background: #f7e6eb; color: #986276; font-size: 11px; font-weight: 800;
+    margin-bottom: 22px;
+  }
+  .mini-flower { color: var(--pink-deep); font-size: 15px; line-height: 1; }
+  h1, h2, p { margin: 0; }
+  .headline { font-size: clamp(30px, 7.3vw, 47px); line-height: 1.42; font-weight: 900; letter-spacing: -.8px; }
+  .headline .pink { color: var(--pink-deep); }
+  .subline { font-size: clamp(15px, 3.7vw, 20px); line-height: 1.8; color: var(--ink-soft); margin-top: 14px; font-weight: 500; }
+  .english-card {
+    position: relative; width: 100%; border-radius: 27px; padding: 27px 20px 24px;
+    background: var(--paper); border: 1px solid rgba(80,55,71,.08);
+    box-shadow: 0 14px 32px rgba(102,69,88,.075); direction: ltr;
+  }
+  .english-card:before {
+    content: ''; position:absolute; top:-8px; right:24px; width:48px; height:17px;
+    background:rgba(246,223,170,.88); transform:rotate(5deg); border-radius:3px;
+  }
+  .small-label { color: #a07b8a; font-weight: 800; font-size: 10px; letter-spacing: 2px; margin-bottom: 14px; }
+  .bad-phrase { font-size: clamp(35px, 9vw, 56px); font-weight: 900; color: #b6a4ad; text-decoration: line-through; text-decoration-color: var(--pink-deep); text-decoration-thickness: 3px; }
+  .good-phrase { font-family: 'Trebuchet MS', Tahoma, Arial, sans-serif; font-size: clamp(24px, 6vw, 35px); line-height: 1.35; font-weight: 800; color: var(--plum); }
+  .translation { font-size: 16px; line-height: 1.8; color: var(--ink-soft); margin-top: 16px; }
+  .note {
+    display: inline-flex; align-items: center; gap: 8px; background: #f9eddd; color: #8b6c55;
+    border-radius: 13px; padding: 10px 13px; font-size: 12px; font-weight: 700; line-height:1.5;
+  }
+  .split-list { display: grid; gap: 9px; direction: ltr; margin-top: 17px; }
+  .split { background: #fffdfb; border: 1px solid rgba(80,55,71,.09); border-radius: 15px; padding: 11px 15px; text-align: left; font: 700 16px 'Trebuchet MS', Tahoma, Arial, sans-serif; }
+  .split:nth-child(2) { background: #f8e8ed; border-color: transparent; }
+  .repeat-card { background: #f8e8ed; border-radius: 24px; padding: 25px 19px; margin-top: 18px; }
+  .repeat-card .good-phrase { font-size: clamp(23px, 5.8vw, 32px); }
+  .arabic-note { font-size: 14px; color: var(--ink-soft); line-height: 1.8; margin-top: 13px; }
+  .footer {
+    position:absolute; bottom:5%; left:7%; right:7%; display:flex; justify-content:space-between; align-items:center;
+    color:#9b8790; font-size:10px; font-weight:700;
+  }
+  .footer .handle { direction:ltr; letter-spacing:.5px; }
+  .doodle { position:absolute; pointer-events:none; opacity:.9; }
+  .doodle.one { left:6%; top:26%; transform:rotate(-11deg); }
+  .doodle.two { right:7%; bottom:25%; transform:rotate(12deg); }
+  .caption-label { color: var(--pink-deep); font-size: 12px; font-weight: 800; letter-spacing: .6px; margin-bottom: 9px; }
+  .cta { display:inline-block; border-radius:999px; padding:13px 19px; margin-top:18px; background:var(--plum); color:#fff8f4; font-size:13px; font-weight:800; }
+  .final-title { font-size: clamp(29px, 7vw, 43px); line-height:1.45; font-weight:900; }
+  .final-title span { color:var(--pink-deep); }
+  @media (prefers-reduced-motion: reduce) { .scene { animation:none; } .progress span.active i { transition:none; } }
+</style>
 </head>
 <body>
-<div class="video-frame" id="stage">
-  <svg class="canvas" viewBox="0 0 1080 1920">
-    <text x="540" y="430" text-anchor="middle" class="meta-title">THE ANTI-GRAVITY ILLUSION</text>
-    <text x="540" y="465" text-anchor="middle" class="badge-label" id="statusBadge">APPARENT UPHILL MOTION</text>
-
-    <!-- Support Pillars showing slope -->
-    <line x1="220" y1="960" x2="220" y2="1140" class="support-pillar" />
-    <line x1="860" y1="780" x2="860" y2="1140" class="support-pillar" />
-    <line x1="200" y1="1140" x2="880" y2="1140" stroke="rgba(255,255,255,0.2)" stroke-width="2" />
-    <text x="220" y="1180" text-anchor="middle" font-size="16" fill="#888">نقطة البداية المنخفضة</text>
-    <text x="860" y="1180" text-anchor="middle" font-size="16" fill="#888">نقطة النهاية المرتفعة</text>
-
-    <!-- Diverging V-Rails in Perspective -->
-    <line x1="220" y1="960" x2="860" y2="740" class="rail-line" id="railTop" />
-    <line x1="220" y1="960" x2="860" y2="840" class="rail-line" id="railBottom" />
-
-    <!-- Actual Center of Mass Fall Guide -->
-    <path id="comPath" class="com-trajectory" d="M 220 830 L 860 885" />
-    <text id="comLabel" x="540" y="930" text-anchor="middle" font-size="16" font-weight="700" fill="#00f5d4" opacity="0">مركز الثقل ينحدر نحو الأسفل فعلياً</text>
-
-    <!-- Double Cone Assembly -->
-    <g id="coneRig" transform="translate(220, 830)">
-      <polygon id="coneLeft" points="0,-130 -140,0 0,130" class="cone-body" />
-      <polygon id="coneRight" points="0,-130 140,0 0,130" class="cone-body" fill="#d9006c" />
-      <circle cx="0" cy="0" r="10" class="com-marker" />
-      <line x1="-140" y1="0" x2="140" y2="0" stroke="#ffffff" stroke-width="2" stroke-dasharray="4 4" />
-    </g>
-  </svg>
-
-  <div class="captions-box">
-    <div class="caption-item active" id="c0">
-      <div class="ar-text">صاحب هالحساب عم يستغفل عقلك: بقلك هالمخروط عم يتدحرج لطلوع!</div>
-      <div class="en-text">The creator is fooling you, claiming this cone rolls uphill!</div>
+<main class="reel" aria-label="فيديو صفاء: قوليها طبيعي — الحلقة الأولى">
+  <div class="wash"></div><div class="grain"></div>
+  <div class="top">
+    <div class="brand">
+      <svg class="flower-mark" viewBox="0 0 40 40" aria-hidden="true">
+        <g fill="#e7a8b8" stroke="#c87991" stroke-width=".8">
+          <ellipse cx="20" cy="9" rx="5" ry="8"/><ellipse cx="20" cy="31" rx="5" ry="8"/>
+          <ellipse cx="9" cy="20" rx="8" ry="5"/><ellipse cx="31" cy="20" rx="8" ry="5"/>
+          <ellipse cx="12.2" cy="12.2" rx="5" ry="7" transform="rotate(-45 12.2 12.2)"/>
+          <ellipse cx="27.8" cy="27.8" rx="5" ry="7" transform="rotate(-45 27.8 27.8)"/>
+          <ellipse cx="27.8" cy="12.2" rx="5" ry="7" transform="rotate(45 27.8 12.2)"/>
+          <ellipse cx="12.2" cy="27.8" rx="5" ry="7" transform="rotate(45 12.2 27.8)"/>
+        </g><circle cx="20" cy="20" r="4.3" fill="#f6dfaa" stroke="#c87991" stroke-width=".8"/>
+      </svg>
+      <div class="brand-copy"><div class="brand-name">صفاء</div><div class="brand-sub">ENGLISH, EVERYDAY</div></div>
     </div>
-    <div class="caption-item" id="c1">
-      <div class="ar-text">وللوهلة الأولى... عنجد مبين عم يكسر قوانين نيوتن والفيزياء!</div>
-      <div class="en-text">At first glance... it truly seems to defy Newton's laws!</div>
-    </div>
-    <div class="caption-item" id="c2">
-      <div class="ar-text">بس الحقيقة؟ السكتين عم يتباعدوا، فمركز ثقله عم ينزل لتحت!</div>
-      <div class="en-text">The truth? Diverging rails cause its center of mass to drop!</div>
-    </div>
-    <div class="caption-item" id="c3">
-      <div class="ar-text">عينك انخدعت بارتفاع السكة، بينما الجاذبية عم تسحب الكتلة للأسفل!</div>
-      <div class="en-text">Your eyes tracked the rails, but gravity strictly pulled it downward!</div>
-    </div>
-    <div class="caption-item" id="c4">
-      <div class="ar-text">فقبل ما تظن إنك شفت معجزة، تذكر منيح إن...</div>
-      <div class="en-text">Before you assume you witnessed a miracle, remember...</div>
-    </div>
+    <div class="episode-pill">قوليها طبيعي · 01</div>
   </div>
-</div>
-
+  <div class="progress" id="progress"><span><i></i></span><span><i></i></span><span><i></i></span><span><i></i></span><span><i></i></span></div>
+  <svg class="doodle one" width="48" height="48" viewBox="0 0 48 48" aria-hidden="true"><path d="M24 3 L27 17 L40 10 L31 22 L45 26 L30 29 L37 43 L25 33 L18 46 L18 31 L4 36 L14 25 L2 17 L18 19 Z" fill="#f6dfaa" stroke="#ddb878" stroke-width="1.3" stroke-linejoin="round"/></svg>
+  <svg class="doodle two" width="48" height="48" viewBox="0 0 48 48" aria-hidden="true"><path d="M24 3 C28 14 34 17 45 19 C34 23 29 29 27 44 C22 32 16 26 3 24 C15 21 21 15 24 3Z" fill="#e7a8b8" opacity=".7"/></svg>
+  <section class="stage" id="stage" aria-live="polite"></section>
+  <div class="footer"><span>جملة صغيرة، فرق كبير ✿</span><span class="handle">@SAFAA.ENGLISH</span></div>
+</main>
 <script>
-  const coneRig = document.getElementById('coneRig');
-  const comPath = document.getElementById('comPath');
-  const comLabel = document.getElementById('comLabel');
-  const statusBadge = document.getElementById('statusBadge');
-
-  const totalDuration = 16.0;
-
-  const captions = [
-    { start: 0.0, end: 3.2, el: document.getElementById('c0') },
-    { start: 3.2, end: 6.2, el: document.getElementById('c1') },
-    { start: 6.2, end: 10.0, el: document.getElementById('c2') },
-    { start: 10.0, end: 13.5, el: document.getElementById('c3') },
-    { start: 13.5, end: 16.0, el: document.getElementById('c4') }
+  const scenes = [
+    `<div class="scene"><div class="eyebrow"><span class="mini-flower">✿</span> حلقة ١ · قوليها طبيعي</div><h1 class="headline">ما سمعتي الكلام زين؟<br><span class="pink">خلّينا نردّ بلطف</span></h1><p class="subline">جملة إنجليزية صغيرة<br>تنفعك بمواقف كثيرة.</p><div style="margin-top:25px;font-size:35px;color:#c87991">✿ ✦ ✿</div></div>`,
+    `<div class="scene"><div class="caption-label">بدل هالردّ السريع…</div><div class="english-card"><div class="small-label">YOU MIGHT SAY</div><div class="bad-phrase">WHAT?</div></div><p class="subline">كلمة “What?” مو غلط دائماً،<br>بس ممكن تبان حادّة حسب النبرة.</p></div>`,
+    `<div class="scene"><div class="eyebrow"><span class="mini-flower">✿</span> جرّبي هالجملة</div><div class="english-card"><div class="small-label">SAY THIS INSTEAD</div><div class="good-phrase">Sorry,<br>could you say that<br>again, please?</div></div><p class="translation">يعني: عذراً، ممكن تعيد كلامك لو سمحت؟</p></div>`,
+    `<div class="scene"><div class="caption-label">خلّينا نقسمها سوا</div><h2 class="headline" style="font-size:clamp(27px,6.5vw,40px)">جزّئيها…<span class="pink"> ثم قوليها</span></h2><div class="split-list"><div class="split">Sorry,</div><div class="split">could you say that again,</div><div class="split">please?</div></div><p class="translation">خذي نفس، وقوليها بهدوء وبابتسامة.</p></div>`,
+    `<div class="scene"><div class="eyebrow"><span class="mini-flower">✿</span> دورك الحين</div><h2 class="final-title">ردّديها معي<br><span>مرة ثانية</span></h2><div class="repeat-card"><div class="good-phrase">Sorry, could you say that again, please?</div><div class="arabic-note">عذراً، ممكن تعيد كلامك لو سمحت؟</div></div><div class="cta">احفظيها لوقت تحتاجينها ♡</div><p class="translation" style="font-size:12px;margin-top:12px">الحلقة الجاية: كيف تطلبين المساعدة؟</p></div>`
   ];
-
-  function seekTo(sec) {
-    const t = ((sec % totalDuration) + totalDuration) % totalDuration;
-
-    captions.forEach(c => {
-      if (t >= c.start && t < c.end) c.el.classList.add('active');
-      else c.el.classList.remove('active');
+  const stage = document.getElementById('stage');
+  const bars = [...document.querySelectorAll('.progress span')];
+  const DURATION = 4400;
+  let current = 0;
+  function renderScene(index) {
+    current = index;
+    stage.innerHTML = scenes[index];
+    bars.forEach((bar, i) => {
+      bar.classList.remove('active', 'done');
+      const fill = bar.querySelector('i');
+      fill.style.transition = 'none';
+      fill.style.width = i < index ? '100%' : '0%';
+      if (i < index) bar.classList.add('done');
     });
-
-    // 0.0 - 5.5: Rolls "uphill" from x=220 to x=860
-    // 5.5 - 9.8: Reveals the downward laser path of Center of Mass (CoM)
-    // 9.8 - 13.5: Explanatory hold
-    // 13.5 - 16.0: Smooth rewind to x=220 for a seamless loop
-    let progress = 0;
-    if (t < 5.5) {
-      progress = (t / 5.5);
-      statusBadge.textContent = 'ILLUSION: ROLLING UPHILL';
-      statusBadge.style.fill = '#ff007f';
-      comPath.style.opacity = '0';
-      comLabel.style.opacity = '0';
-    } else if (t < 13.5) {
-      progress = 1.0;
-      statusBadge.textContent = 'PHYSICS: CENTER OF MASS FALLS';
-      statusBadge.style.fill = '#00f5d4';
-      comPath.style.opacity = '1';
-      comLabel.style.opacity = '1';
-    } else {
-      const p = (t - 13.5) / 2.5;
-      const ease = 0.5 + 0.5 * Math.cos(p * Math.PI);
-      progress = ease;
-      statusBadge.textContent = 'SEAMLESS RESET';
-      statusBadge.style.fill = '#ffb703';
-      comPath.style.opacity = '0';
-      comLabel.style.opacity = '0';
+    const activeFill = bars[index].querySelector('i');
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      bars[index].classList.add('active');
+      activeFill.style.transition = `width ${DURATION}ms linear`;
+      activeFill.style.width = '100%';
+    }));
+    if (index < scenes.length - 1) {
+      window.setTimeout(() => renderScene(index + 1), DURATION);
     }
-
-    // Geometry Calculation:
-    // Left x=220: Rail is narrow (width=0), rests on widest cone radius (R=130), CoM Y = 960 - 130 = 830
-    // Right x=860: Rail height average = 790, rail width = 100.
-    // The cone drops inside the rails by radius delta, putting CoM Y at 885 (55px lower!)
-    const currentX = 220 + (860 - 220) * progress;
-    const currentY = 830 + (885 - 830) * progress;
-    const scale = 1.0 - 0.15 * progress;
-
-    coneRig.setAttribute('transform', `translate(${currentX}, ${currentY}) scale(${scale})`);
   }
-
-  let startTime = null;
-  function render(timestamp) {
-    if (!startTime) startTime = timestamp;
-    let elapsed = (timestamp - startTime) / 1000;
-    seekTo(elapsed % totalDuration);
-    requestAnimationFrame(render);
-  }
-  requestAnimationFrame(render);
-  window.seekTo = seekTo;
+  renderScene(0);
 </script>
 </body>
 </html>
