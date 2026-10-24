@@ -4,8 +4,10 @@
 #  GitHub web UI → repo → "Add file" → "Create new file" →
 #  type exactly:  .github/workflows/render.yml   → paste this → Commit.
 #
-#  (The .github folder is hidden on your computer, which is why drag-and-drop
-#   upload skipped it. Creating the path by hand works every time.)
+#  v2 (fixes "exit code 127"): verification now uses Remotion's bundled ffprobe,
+#  because GitHub's Ubuntu runners do not have ffmpeg/ffprobe installed.
+#  The MP4 artifact is uploaded BEFORE verification, so a check can never
+#  cost you the video.
 # ============================================================================
 name: Render HTML → MP4 (1080x1920 · 60fps · 25s)
 
@@ -157,7 +159,7 @@ jobs:
       - name: Mirror inputs/ → public/scenes/
         run: |
           mkdir -p public/scenes
-          if compgen -G "inputs/**/*.html" > /dev/null || compgen -G "inputs/*.html" > /dev/null; then
+          if [ -n "$(find inputs -name '*.html' -print -quit 2>/dev/null)" ]; then
             cp -r inputs/. public/scenes/
             rm -rf public/scenes/audio
             rm -f public/scenes/demo.html
@@ -166,6 +168,7 @@ jobs:
             mkdir -p public/audio
             cp -r inputs/audio/. public/audio/
           fi
+          find public/scenes -name '*.html' | sort
 
       # Chrome Headless Shell lives in node_modules/.remotion (wiped by npm ci).
       - name: Cache headless browser
@@ -194,18 +197,7 @@ jobs:
           done
           echo "--- rendered ---"
 
-      - name: Verify the MP4s
-        run: |
-          shopt -s nullglob
-          found=0
-          for f in out/*.mp4; do
-            found=1
-            echo "== $f ($(du -h "$f" | cut -f1))"
-            ffprobe -v error -select_streams v:0 \
-              -show_entries stream=width,height,r_frame_rate,nb_frames -of default=nw=1 "$f"
-          done
-          [ "$found" = "1" ] || { echo "No MP4 produced"; exit 1; }
-
+      # Upload BEFORE verifying: a verification problem must never cost you the video.
       - uses: actions/upload-artifact@v4
         if: success()
         with:
@@ -213,6 +205,13 @@ jobs:
           path: out/*.mp4
           if-no-files-found: error
           retention-days: 14
+
+      # Checks 1080x1920 / 60fps / 25s / 1500 frames.
+      # Uses Remotion's bundled ffprobe — Ubuntu runners have no ffmpeg on PATH
+      # (that was the "exit code 127" in the previous run).
+      - name: Verify 1080x1920 · 60fps · 25s
+        if: success()
+        run: node scripts/verify-output.mjs out
 
   # 3 ─ Collect every MP4 into one artifact + one GitHub Release.
   publish:
