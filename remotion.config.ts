@@ -1,8 +1,10 @@
 import { Config } from '@remotion/cli/config';
-import config from './video.config.json';
+import rawConfig from './video.config.json';
+
+const config = rawConfig as typeof rawConfig & { jpegQuality?: number };
 
 Config.setVideoImageFormat(config.imageFormat as 'jpeg' | 'png');
-Config.setJpegQuality(config.jpegQuality);
+if (config.imageFormat === 'jpeg') Config.setJpegQuality(config.jpegQuality ?? 90);
 Config.setCodec(config.codec as 'h264');
 Config.setCrf(config.crf);
 Config.setPixelFormat('yuv420p');

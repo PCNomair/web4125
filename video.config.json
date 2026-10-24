@@ -1,16 +1,17 @@
 {
-  "width": 1080,
-  "height": 1920,
+  "width": 540,
+  "height": 960,
   "fps": 60,
   "durationInSeconds": 25,
   "backgroundColor": "#000000",
   "loopSeconds": null,
   "codec": "h264",
-  "crf": 18,
-  "imageFormat": "jpeg",
-  "jpegQuality": 90,
+  "crf": 14,
+  "imageFormat": "png",
   "x264Preset": "medium",
   "concurrency": "100%",
   "gl": "swangle",
-  "scale": 1
+  "scale": 2,
+  "colorSpace": "bt709",
+  "pixelFormat": "yuv420p"
 }

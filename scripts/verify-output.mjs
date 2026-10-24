@@ -9,7 +9,7 @@
  *   node scripts/verify-output.mjs out            # verify
  *   node scripts/verify-output.mjs out --warn     # never fail the build
  */
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -18,12 +18,52 @@ const soft = process.argv.includes('--warn');
 const ROOT = process.cwd();
 
 const config = JSON.parse(fs.readFileSync(path.join(ROOT, 'video.config.json'), 'utf8'));
+const SCALE = config.scale ?? 1;
 const EXPECT = {
-  width: config.width,
-  height: config.height,
+  width: Math.round(config.width * SCALE),
+  height: Math.round(config.height * SCALE),
   fps: config.fps,
   seconds: config.durationInSeconds,
 };
+
+function resolveBinary(name) {
+  // system binary first, then the copy bundled with @remotion/compositor-*
+  try {
+    execFileSync(name, ['-version'], { stdio: 'ignore' });
+    return name;
+  } catch {
+    /* not installed */
+  }
+  const compositorDir = path.join(ROOT, 'node_modules', '@remotion');
+  if (fs.existsSync(compositorDir)) {
+    for (const pkg of fs.readdirSync(compositorDir)) {
+      if (!pkg.startsWith('compositor-')) continue;
+      const candidate = path.join(compositorDir, pkg, name);
+      if (fs.existsSync(candidate)) {
+        try {
+          fs.chmodSync(candidate, 0o755);
+        } catch {
+          /* ignore */
+        }
+        return candidate;
+      }
+    }
+  }
+  return null;
+}
+
+/**
+ * A frozen video (JS timeline that the renderer could not drive) looks like a
+ * still image and encodes to almost nothing. Count visually distinct frames.
+ */
+function countDistinctFrames(ffmpeg, file) {
+  const result = spawnSync(
+    ffmpeg,
+    ['-hide_banner', '-nostdin', '-i', file, '-vf', 'mpdecimate', '-f', 'null', '-'],
+    { encoding: 'utf8', maxBuffer: 32 * 1024 * 1024 },
+  );
+  return `${result.stdout ?? ''}\n${result.stderr ?? ''}`;
+}
 
 function resolveFfprobe() {
   // 1. system ffprobe (present locally, absent on GitHub runners)
@@ -62,6 +102,7 @@ if (files.length === 0) {
 }
 
 const ffprobe = resolveFfprobe();
+const ffmpeg = resolveBinary('ffmpeg');
 console.log(
   ffprobe
     ? `[verify] ffprobe: ${ffprobe}`
@@ -121,6 +162,25 @@ for (const file of files) {
     );
   } else {
     console.log(`[verify] ✔ ${file}  ${sizeMb} MB (exists, not probed)`);
+  }
+
+  // Motion check: a still-looking video means the page's JS timeline never moved.
+  if (ffmpeg) {
+    const log = countDistinctFrames(ffmpeg, full);
+    const matches = [...log.matchAll(/frame=\s*(\d+)/g)];
+    const distinct = matches.length ? Number(matches[matches.length - 1][1]) : null;
+    if (distinct !== null) {
+      const expected = EXPECT.fps * EXPECT.seconds;
+      const ratio = distinct / expected;
+      console.log(`[verify]   motion: ${distinct}/${expected} distinct frames (${(ratio * 100).toFixed(1)}%)`);
+      if (ratio < 0.05) {
+        problems.push(
+          `${distinct} distinct frames out of ${expected} — the page is frozen. ` +
+            'Its JS timeline (setTimeout / setInterval / Date.now) is not being driven; ' +
+            'expose window.__seek(t) or use CSS animations.',
+        );
+      }
+    }
   }
 
   for (const problem of problems) console.error(`         └─ ${problem}`);

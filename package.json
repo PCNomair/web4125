@@ -4,13 +4,14 @@
   "private": true,
   "description": "Drop an HTML file in, get a 25s vertical 1080x1920 @60fps MP4 out. Powered by Remotion + GitHub Actions.",
   "scripts": {
-    "scan": "node scripts/scan-scenes.mjs",
+    "scan": "node scripts/scan-fonts.mjs && node scripts/scan-scenes.mjs",
     "studio": "npm run scan && remotion studio",
     "render": "npm run scan && node scripts/render-all.mjs",
     "plan": "npm run scan && node scripts/plan.mjs",
     "validate": "npm run scan && tsc --noEmit",
     "browser:ensure": "remotion browser ensure",
-    "clean": "node scripts/clean.mjs"
+    "clean": "node scripts/clean.mjs",
+    "fonts": "node scripts/scan-fonts.mjs"
   },
   "dependencies": {
     "@remotion/bundler": "^4.0.538",
