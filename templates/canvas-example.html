@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<!--
+  CANVAS / JS-DRIVEN SCENE — copy into public/scenes/ to use.
+
+  If your HTML renders with <canvas>, WebGL or plain JS, the renderer cannot
+  infer the timeline. Expose a pure function of time:
+
+      window.__seek = (t, { progress, duration }) => { ... draw frame at t seconds ... }
+
+  Optional: `window.__ready = promiseOrValue` to hold the first frame until
+  assets (images, data) are loaded.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Canvas example</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 1080px; height: 1920px; overflow: hidden; background: #07080c; }
+  canvas { display: block; width: 1080px; height: 1920px; }
+</style>
+</head>
+<body>
+  <canvas id="c" width="1080" height="1920"></canvas>
+  <script>
+    const canvas = document.getElementById('c');
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width;
+    const H = canvas.height;
+    const COLORS = ['#2f6bff', '#ff2fa8', '#22e3b5', '#ffd166'];
+
+    // Deterministic pseudo-random so every capture of frame N looks identical.
+    const rand = (i) => {
+      const x = Math.sin(i * 127.1 + 311.7) * 43758.5453;
+      return x - Math.floor(x);
+    };
+
+    function draw(t, progress) {
+      // background
+      const bg = ctx.createLinearGradient(0, 0, 0, H);
+      bg.addColorStop(0, '#0a1030');
+      bg.addColorStop(1, '#170a26');
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, W, H);
+
+      // orbiting particles
+      for (let i = 0; i < 70; i++) {
+        const speed = 0.25 + rand(i) * 0.9;
+        const radius = 140 + rand(i + 90) * 720;
+        const angle = t * speed + rand(i + 180) * Math.PI * 2;
+        const x = W / 2 + Math.cos(angle) * radius;
+        const y = H / 2 + Math.sin(angle) * radius * 0.75;
+        const size = 4 + rand(i + 270) * 22;
+        ctx.beginPath();
+        ctx.fillStyle = COLORS[i % COLORS.length];
+        ctx.globalAlpha = 0.15 + rand(i + 360) * 0.5;
+        ctx.arc(x, y, size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+
+      // headline that slides in over the first 1.5s
+      const ease = 1 - Math.pow(1 - Math.min(1, t / 1.5), 3);
+      ctx.save();
+      ctx.translate(0, (1 - ease) * 120);
+      ctx.globalAlpha = ease;
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '800 150px "Helvetica Neue", Arial, sans-serif';
+      ctx.fillText('CANVAS', W / 2, H / 2 - 40);
+      ctx.fillStyle = '#7aa2ff';
+      ctx.fillText('60 FPS', W / 2, H / 2 + 130);
+      ctx.restore();
+
+      // progress bar
+      ctx.fillStyle = 'rgba(255,255,255,0.12)';
+      ctx.fillRect(96, H - 150, W - 192, 6);
+      ctx.fillStyle = '#7cf3d0';
+      ctx.fillRect(96, H - 150, (W - 192) * progress, 6);
+    }
+
+    window.__seek = (t, meta = {}) => draw(t, meta.progress || 0);
+    window.__ready = true;
+
+    draw(0, 0); // first paint before the renderer takes over
+  </script>
+</body>
+</html>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<!--
+  STARTER TEMPLATE — copy this into public/scenes/my-video.html and edit.
+  This file lives in templates/ so it is NOT rendered itself.
+
+  Rules of thumb
+  · The canvas is a fixed 1080 × 1920. Design at that size, nothing else.
+  · Every CSS animation you write runs on the video's 25s timeline.
+    `animation-duration` = its length inside the video.
+  · Don't rely on wall-clock time (Date.now(), setTimeout, requestAnimationFrame
+    loops). Frames are captured out of order, in parallel. Use CSS animations,
+    the `--remotion-time` / `--t` CSS variables, or window.__seek(t).
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>My video</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+    background: #0b0c10;
+    color: #fff;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .stage {
+    position: relative;
+    width: 1080px;
+    height: 1920px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 0 96px;
+  }
+
+  /* --remotion-time (a CSS time value) is updated every frame by the renderer. */
+  h1 {
+    font-size: 150px;
+    line-height: 0.95;
+    letter-spacing: -0.04em;
+    animation: intro 25s cubic-bezier(.16,.9,.28,1) both;
+  }
+  p {
+    margin-top: 40px;
+    font-size: 40px;
+    color: rgba(255,255,255,.7);
+    animation: intro 25s cubic-bezier(.16,.9,.28,1) both;
+    animation-delay: -0.4s;
+  }
+
+  @keyframes intro {
+    0%   { opacity: 0; transform: translateY(80px); }
+    10%  { opacity: 1; transform: translateY(0); }
+    90%  { opacity: 1; transform: translateY(0); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+
+  /* A hint at the bottom that reads the current time from the engine. */
+  .clock::after { content: var(--t, "0s"); }
+</style>
+</head>
+<body>
+  <div class="stage">
+    <h1>Your<br />headline</h1>
+    <p>Whatever HTML + CSS can draw, becomes the video.</p>
+    <p class="clock" style="font-size:24px;letter-spacing:.3em;opacity:.5"></p>
+  </div>
+</body>
+</html>

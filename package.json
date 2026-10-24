@@ -1,0 +1,34 @@
+{
+  "name": "html-video-renderer",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Drop an HTML file in, get a 25s vertical 1080x1920 @60fps MP4 out. Powered by Remotion + GitHub Actions.",
+  "scripts": {
+    "scan": "node scripts/scan-scenes.mjs",
+    "studio": "npm run scan && remotion studio",
+    "render": "npm run scan && node scripts/render-all.mjs",
+    "plan": "npm run scan && node scripts/plan.mjs",
+    "validate": "npm run scan && tsc --noEmit",
+    "browser:ensure": "remotion browser ensure",
+    "clean": "node scripts/clean.mjs"
+  },
+  "dependencies": {
+    "@remotion/bundler": "^4.0.538",
+    "@remotion/cli": "^4.0.538",
+    "@remotion/renderer": "^4.0.538",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "remotion": "^4.0.538"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "@types/react": "^18.3.31",
+    "typescript": "^7.0.2"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "repository": {
+    "type": "git"
+  }
+}

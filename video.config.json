@@ -1,0 +1,16 @@
+{
+  "width": 1080,
+  "height": 1920,
+  "fps": 60,
+  "durationInSeconds": 25,
+  "backgroundColor": "#000000",
+  "loopSeconds": null,
+  "codec": "h264",
+  "crf": 18,
+  "imageFormat": "jpeg",
+  "jpegQuality": 90,
+  "x264Preset": "medium",
+  "concurrency": "100%",
+  "gl": "swangle",
+  "scale": 1
+}

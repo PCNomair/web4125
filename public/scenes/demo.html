@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Demo — HTML to MP4</title>
+<style>
+  :root { --t: 0s; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+    background: #05060a;
+    font-family: "Helvetica Neue", Helvetica, Arial, "Segoe UI", sans-serif;
+    color: #fff;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .stage {
+    position: relative;
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+    background:
+      radial-gradient(120% 80% at 50% 0%, #1b2a6b 0%, rgba(27,42,107,0) 60%),
+      radial-gradient(100% 70% at 50% 100%, #6a1b7a 0%, rgba(106,27,122,0) 65%),
+      #05060a;
+  }
+
+  /* ---------- animated aurora blobs ---------- */
+  .blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(90px);
+    opacity: 0.55;
+    animation: drift 25s ease-in-out both;
+  }
+  .blob.a { width: 760px; height: 760px; left: -220px; top: 180px; background: #2f6bff; }
+  .blob.b { width: 620px; height: 620px; right: -180px; top: 720px; background: #ff2fa8; animation-delay: -3.5s; }
+  .blob.c { width: 700px; height: 700px; left: -120px; bottom: -220px; background: #22e3b5; animation-delay: -7s; }
+
+  @keyframes drift {
+    0%   { transform: translate3d(0,0,0) scale(0.9); }
+    25%  { transform: translate3d(90px,-70px,0) scale(1.1); }
+    50%  { transform: translate3d(-60px,80px,0) scale(0.95); }
+    75%  { transform: translate3d(70px,40px,0) scale(1.15); }
+    100% { transform: translate3d(0,0,0) scale(0.9); }
+  }
+
+  /* ---------- grid + vignette (static) ---------- */
+  .grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(to right, rgba(255,255,255,0.06) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255,255,255,0.06) 1px, transparent 1px);
+    background-size: 90px 90px;
+    mask-image: radial-gradient(70% 55% at 50% 42%, #000 30%, transparent 100%);
+    -webkit-mask-image: radial-gradient(70% 55% at 50% 42%, #000 30%, transparent 100%);
+  }
+
+  /* ---------- content ---------- */
+  .content {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0 96px;
+    text-align: center;
+  }
+
+  .eyebrow {
+    font-size: 30px;
+    letter-spacing: 0.42em;
+    text-transform: uppercase;
+    color: #8fa6ff;
+    margin-bottom: 44px;
+    animation: rise 25s cubic-bezier(.16,.9,.28,1) both;
+    animation-delay: -0.2s;
+  }
+
+  h1 {
+    font-size: 148px;
+    line-height: 0.94;
+    letter-spacing: -0.04em;
+    font-weight: 800;
+    animation: rise 25s cubic-bezier(.16,.9,.28,1) both;
+    animation-delay: -0.6s;
+  }
+  h1 .accent {
+    background: linear-gradient(100deg, #7cf3d0, #7aa2ff 45%, #ff8ad4);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .sub {
+    margin-top: 48px;
+    font-size: 40px;
+    line-height: 1.35;
+    color: rgba(255,255,255,0.72);
+    font-weight: 400;
+    animation: rise 25s cubic-bezier(.16,.9,.28,1) both;
+    animation-delay: -1s;
+  }
+
+  .chips {
+    display: flex;
+    gap: 18px;
+    margin-top: 64px;
+    animation: rise 25s cubic-bezier(.16,.9,.28,1) both;
+    animation-delay: -1.4s;
+  }
+  .chip {
+    padding: 22px 34px;
+    border-radius: 999px;
+    font-size: 28px;
+    letter-spacing: 0.06em;
+    color: #dbe4ff;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.16);
+    backdrop-filter: blur(8px);
+  }
+
+  /* ---------- progress bar over the full 25s ---------- */
+  .track {
+    position: absolute;
+    left: 96px; right: 96px; bottom: 150px;
+    height: 6px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.12);
+    overflow: hidden;
+  }
+  .fill {
+    height: 100%;
+    width: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #7cf3d0, #7aa2ff, #ff8ad4);
+    transform-origin: left center;
+    animation: fill 25s linear both;
+  }
+  @keyframes fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+  .footer {
+    position: absolute;
+    left: 96px; right: 96px; bottom: 88px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 26px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.45);
+  }
+
+  /* entrance: everything settles in the first ~2s, stays, and eases out at the end */
+  @keyframes rise {
+    0%   { opacity: 0; transform: translateY(70px) scale(0.97); }
+    8%   { opacity: 1; transform: translateY(0) scale(1); }
+    92%  { opacity: 1; transform: translateY(0) scale(1); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+  }
+</style>
+</head>
+<body>
+  <div class="stage">
+    <div class="grid"></div>
+    <div class="blob a"></div>
+    <div class="blob b"></div>
+    <div class="blob c"></div>
+
+    <div class="content">
+      <div class="eyebrow">Remotion &middot; GitHub Actions</div>
+      <h1>HTML<br /><span class="accent">to video</span></h1>
+      <p class="sub">Drop an .html file in public/scenes<br />and this frame becomes an MP4.</p>
+      <div class="chips">
+        <div class="chip">1080 &times; 1920</div>
+        <div class="chip">60 fps</div>
+        <div class="chip">25 s</div>
+      </div>
+    </div>
+
+    <div class="track"><div class="fill"></div></div>
+    <div class="footer"><span>demo.html</span><span>0 &rarr; 25 s</span></div>
+  </div>
+</body>
+</html>
