@@ -107,7 +107,9 @@ jobs:
               '--fps=60',
               '--duration=25',
               '--start-delay=1',
-              '--pix-fmt=yuv420p'
+              '--pix-fmt=yuv420p',
+              # Avoid Chromium GPU startup crashes on hosted Windows runners.
+              '--launch-arguments=--disable-gpu'
             )
             & timecut @timecutArgs
             if ($LASTEXITCODE -ne 0) {
