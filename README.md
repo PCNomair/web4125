@@ -20,7 +20,7 @@
 
 ```
 inputs/1.html              →  out/1.mp4
-inputs/clips/sale.html     →  out/sale.mp4
+inputs/clips/sale.html     →  out/clips-sale.mp4
 inputs/quiet-exit.tsx      →  out/react-quiet-exit.mp4
 inputs/audio/1.mp3         →  صوت اختياري لـ inputs/1.html
 ```
@@ -144,7 +144,7 @@ fonts/                      ← الخطوط المشحونة (Liberation + Noto
 src/timeline.ts             ← الساعة الافتراضية + حقن @font-face
 src/seek.ts                 ← محرّك النقل الزمني للإطارات
 src/HtmlVideo.tsx           ← الـ iframe + التقاط الإطار + الصوت
-src/Root.tsx                ← كومبوزيشن لكل ملف HTML
+src/Root.tsx                ← كومبوزيشن لكل ملف HTML وTSX
 scripts/scan-fonts.mjs      ← بناء قواعد @font-face من fonts/
 scripts/scan-scenes.mjs     ← inputs/ → public/scenes/ + قائمة المشاهد
 scripts/render-all.mjs      ← العارض (bundle مرة، متصفح مرة، كل المشاهد)
