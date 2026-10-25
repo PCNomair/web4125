@@ -60,7 +60,7 @@ export const RemotionRoot: React.FC = () => {
         />
       ))}
 
-      {SCENES.length === 0 ? (
+      {SCENES.length === 0 && REACT_SCENES.length === 0 ? (
         <Composition
           id="empty"
           component={Placeholder}
