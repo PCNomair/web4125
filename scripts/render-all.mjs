@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Renders every HTML file in public/scenes/ to out/<id>.mp4
+ * Renders every HTML scene and default-exported TSX video input to out/<id>.mp4
  *
  * Efficiency notes
  * - The Remotion bundle is built ONCE and reused for every scene.
@@ -90,7 +90,7 @@ const main = async () => {
   const totalSeconds = config.durationInSeconds;
 
   log(`Remotion ${require_pkg_version()}`);
-  log(`Format: ${config.width}x${config.height} @ ${config.fps}fps, ${totalSeconds}s (${config.fps * totalSeconds} frames)`);
+  log(`Output: ${Math.round(config.width * (config.scale ?? 1))}x${Math.round(config.height * (config.scale ?? 1))} @ ${config.fps}fps, ${totalSeconds}s (${config.fps * totalSeconds} frames)`);
   log(`Videos to render: ${scenes.length + reactScenes.length} (${scenes.length} HTML, ${reactScenes.length} TSX)`);
   log(`Concurrency: ${concurrency} (cpus: ${os.cpus().length})`);
 
@@ -180,7 +180,7 @@ const main = async () => {
     for (const [index, scene] of reactScenes.entries()) {
       const outputLocation = path.join(OUT_DIR, `${scene.id}.mp4`);
       const inputProps = {};
-      log(`\\n[TSX ${index + 1}/${reactScenes.length}] inputs/${scene.title} → ${path.relative(ROOT, outputLocation)}`);
+      log(`\n[TSX ${index + 1}/${reactScenes.length}] inputs/${scene.title} → ${path.relative(ROOT, outputLocation)}`);
 
       const composition = await selectComposition({
         serveUrl,
@@ -238,8 +238,8 @@ const main = async () => {
 
   const summary = {
     renderedAt: new Date().toISOString(),
-    width: config.width,
-    height: config.height,
+    width: Math.round(config.width * (config.scale ?? 1)),
+    height: Math.round(config.height * (config.scale ?? 1)),
     fps: config.fps,
     durationInSeconds: totalSeconds,
     totalSeconds: Number(((Date.now() - startedAt) / 1000).toFixed(1)),
