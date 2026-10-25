@@ -44,9 +44,34 @@ function uniqueId(prefix, rel, used) {
 }
 
 const used = new Set();
-const htmlFiles = walk(SCENES_DIR, ['.html']).sort((a, b) => a.localeCompare(b));
+
+// Treat inputs/ as the source of truth for HTML and audio as well as TSX.
+// Copy HTML into public/scenes/ because Remotion's staticFile() serves public/.
+const htmlFiles = walk(INPUTS_DIR, ['.html'])
+  .filter((file) => posix(path.relative(INPUTS_DIR, file)).split('/')[0].toLowerCase() !== 'audio')
+  .sort((a, b) => a.localeCompare(b));
+fs.mkdirSync(SCENES_DIR, { recursive: true });
+
+for (const file of htmlFiles) {
+  const rel = posix(path.relative(INPUTS_DIR, file));
+  const dest = path.join(SCENES_DIR, rel);
+  fs.mkdirSync(path.dirname(dest), { recursive: true });
+  fs.copyFileSync(file, dest);
+}
+
+// Refresh audio files so stale tracks from previous renders cannot be attached.
+fs.rmSync(AUDIO_DIR, { recursive: true, force: true });
+fs.mkdirSync(AUDIO_DIR, { recursive: true });
+const inputAudioDir = path.join(INPUTS_DIR, 'audio');
+for (const file of walk(inputAudioDir, AUDIO_EXT)) {
+  const rel = posix(path.relative(inputAudioDir, file));
+  const dest = path.join(AUDIO_DIR, rel);
+  fs.mkdirSync(path.dirname(dest), { recursive: true });
+  fs.copyFileSync(file, dest);
+}
+
 const scenes = htmlFiles.map((file) => {
-  const rel = posix(path.relative(SCENES_DIR, file));
+  const rel = posix(path.relative(INPUTS_DIR, file));
   const id = uniqueId('scene-', rel, used);
   const base = rel.replace(/\.html$/i, '');
   let audio = null;
