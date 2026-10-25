@@ -30,6 +30,14 @@ const readScenes = () => {
   return JSON.parse(match[1]);
 };
 
+const readReactScenes = () => {
+  const file = path.join(ROOT, 'src', 'scenes.generated.ts');
+  const source = fs.readFileSync(file, 'utf8');
+  const match = source.match(/export const REACT_SCENE_METADATA = (\\[[\\s\\S]*?\\]);/);
+  if (!match) throw new Error('Could not parse REACT_SCENE_METADATA — run `npm run scan` first.');
+  return JSON.parse(match[1]);
+};
+
 const log = (...args) => console.log('[render]', ...args);
 const fail = (message) => {
   console.error(`\n[render] ✖ ${message}`);
@@ -38,7 +46,10 @@ const fail = (message) => {
 
 const main = async () => {
   const allScenes = readScenes();
-  if (allScenes.length === 0) fail('No HTML files in public/scenes/. Nothing to render.');
+  const allReactScenes = readReactScenes();
+  if (allScenes.length === 0 && allReactScenes.length === 0) {
+    fail('No HTML or React TSX videos found. Add .html or default-exported .tsx files under inputs/.');
+  }
 
   const only = (process.env.ONLY ?? '')
     .split(',')
@@ -57,8 +68,20 @@ const main = async () => {
       )
     : allScenes;
 
-  if (scenes.length === 0) {
-    fail(`ONLY=${process.env.ONLY} did not match any scene. Available: ${allScenes.map((s) => s.id).join(', ')}`);
+  const reactScenes = only.length
+    ? allReactScenes.filter((scene) =>
+        only.some(
+          (want) =>
+            want === scene.id ||
+            want === scene.title ||
+            path.basename(scene.title, '.tsx') === want,
+        ),
+      )
+    : allReactScenes;
+
+  if (scenes.length === 0 && reactScenes.length === 0) {
+    const available = [...allScenes.map((s) => s.id), ...allReactScenes.map((s) => s.id)].join(', ');
+    fail(`ONLY=${process.env.ONLY} did not match any scene. Available: ${available}`);
   }
 
   fs.mkdirSync(OUT_DIR, { recursive: true });
@@ -68,7 +91,7 @@ const main = async () => {
 
   log(`Remotion ${require_pkg_version()}`);
   log(`Format: ${config.width}x${config.height} @ ${config.fps}fps, ${totalSeconds}s (${config.fps * totalSeconds} frames)`);
-  log(`Scenes to render: ${scenes.length}`);
+  log(`Videos to render: ${scenes.length + reactScenes.length} (${scenes.length} HTML, ${reactScenes.length} TSX)`);
   log(`Concurrency: ${concurrency} (cpus: ${os.cpus().length})`);
 
   log('Ensuring headless browser…');
@@ -132,6 +155,62 @@ const main = async () => {
         colorSpace: config.colorSpace ?? 'bt709',
         audioCodec: scene.audio ? 'aac' : null,
         muted: !scene.audio,
+        enforceAudioTrack: false,
+        overwrite: OVERWRITE,
+        logLevel: 'info',
+        timeoutInMilliseconds: 120_000,
+        onProgress: ({ progress, encodedFrames, renderedFrames, stitchStage }) => {
+          const step = Math.floor(progress * 10) * 10;
+          if (step > lastLogged && step < 100) {
+            lastLogged = step;
+            log(
+              `  ${String(step).padStart(3)}%  rendered ${renderedFrames}/${composition.durationInFrames}` +
+                (stitchStage === 'encoding' ? `  (encoding ${encodedFrames})` : ''),
+            );
+          }
+        },
+      });
+
+      const size = fs.statSync(outputLocation).size;
+      const seconds = (Date.now() - sceneStart) / 1000;
+      log(`  ✔ done in ${seconds.toFixed(1)}s — ${(size / 1024 / 1024).toFixed(1)} MB`);
+      results.push({ id: scene.id, file: path.relative(ROOT, outputLocation), size, seconds });
+    }
+
+    for (const [index, scene] of reactScenes.entries()) {
+      const outputLocation = path.join(OUT_DIR, `${scene.id}.mp4`);
+      const inputProps = {};
+      log(`\\n[TSX ${index + 1}/${reactScenes.length}] inputs/${scene.title} → ${path.relative(ROOT, outputLocation)}`);
+
+      const composition = await selectComposition({
+        serveUrl,
+        id: scene.id,
+        inputProps,
+        puppeteerInstance: browser,
+        chromiumOptions: { gl: config.gl },
+      });
+
+      const sceneStart = Date.now();
+      let lastLogged = -1;
+
+      await renderMedia({
+        composition,
+        serveUrl,
+        codec: config.codec,
+        outputLocation,
+        inputProps,
+        puppeteerInstance: browser,
+        chromiumOptions: { gl: config.gl, enableMultiProcessOnLinux: true },
+        concurrency,
+        scale: 1,
+        crf: config.crf,
+        imageFormat: config.imageFormat,
+        ...(config.imageFormat === 'jpeg' ? { jpegQuality: config.jpegQuality ?? 90 } : {}),
+        x264Preset: config.x264Preset,
+        pixelFormat: config.pixelFormat ?? 'yuv420p',
+        colorSpace: config.colorSpace ?? 'bt709',
+        audioCodec: null,
+        muted: true,
         enforceAudioTrack: false,
         overwrite: OVERWRITE,
         logLevel: 'info',
