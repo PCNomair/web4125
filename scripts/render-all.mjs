@@ -33,7 +33,7 @@ const readScenes = () => {
 const readReactScenes = () => {
   const file = path.join(ROOT, 'src', 'scenes.generated.ts');
   const source = fs.readFileSync(file, 'utf8');
-  const match = source.match(/export const REACT_SCENE_METADATA = (\\[[\\s\\S]*?\\]);/);
+  const match = source.match(/export const REACT_SCENE_METADATA = (\[[\s\S]*?\]);/);
   if (!match) throw new Error('Could not parse REACT_SCENE_METADATA — run `npm run scan` first.');
   return JSON.parse(match[1]);
 };
