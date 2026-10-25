@@ -1,8 +1,7 @@
 import React from 'react';
 import { Composition } from 'remotion';
 import { HtmlVideo } from './HtmlVideo';
-import { QuietExitComposition } from './QuietExitComposition';
-import { SCENES } from './scenes.generated';
+import { REACT_SCENES, SCENES } from './scenes.generated';
 import { DURATION_IN_FRAMES, VIDEO } from './config';
 
 /** Used when public/scenes/ is empty, so the Studio still opens cleanly. */
@@ -49,14 +48,17 @@ export const RemotionRoot: React.FC = () => {
         />
       ))}
 
-      <Composition
-        id="react-video"
-        component={QuietExitComposition}
-        durationInFrames={DURATION_IN_FRAMES}
-        fps={VIDEO.fps}
-        width={VIDEO.width}
-        height={VIDEO.height}
-      />
+      {REACT_SCENES.map((scene) => (
+        <Composition
+          key={scene.id}
+          id={scene.id}
+          component={scene.component}
+          durationInFrames={DURATION_IN_FRAMES}
+          fps={VIDEO.fps}
+          width={Math.round(VIDEO.width * (VIDEO.scale ?? 1))}
+          height={Math.round(VIDEO.height * (VIDEO.scale ?? 1))}
+        />
+      ))}
 
       {SCENES.length === 0 ? (
         <Composition
