@@ -71,13 +71,10 @@ jobs:
           echo "HTML files that will be rendered:"
           find public/scenes -name '*.html' | sort
 
-      - name: Render
+      - name: Render all HTML and TSX inputs
         env:
           OVERWRITE: "1"
         run: npm run render
-
-      - name: Render React TSX composition
-        run: npx remotion render src/index.ts react-video out/react-video.mp4 --scale=2
 
       - name: Rename scene-*.mp4 → <name>.mp4
         run: |
