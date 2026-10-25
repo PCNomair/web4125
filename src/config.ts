@@ -7,6 +7,8 @@ export type VideoConfig = {
   durationInSeconds: number;
   backgroundColor: string;
   loopSeconds: number | null;
+  /** Multiplier used only by fixed-size HTML inputs; TSX uses native output dimensions. */
+  scale?: number;
 };
 
 export const VIDEO = config as VideoConfig;
