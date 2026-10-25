@@ -55,21 +55,26 @@ jobs:
       - name: Ensure headless browser
         run: npx remotion browser ensure
 
-      # Remotion can only serve files from public/, so mirror the upload folder.
-      - name: Mirror inputs/ → public/scenes/
+      # Copy only HTML sources into public/; TSX inputs are imported by the Remotion bundle.
+      - name: Mirror HTML inputs → public/scenes/
+        shell: bash
         run: |
+          rm -rf public/scenes
           mkdir -p public/scenes
-          if [ -n "$(find inputs -name '*.html' -print -quit 2>/dev/null)" ]; then
-            cp -r inputs/. public/scenes/
-            rm -rf public/scenes/audio
-            rm -f public/scenes/demo.html
-          fi
+          while IFS= read -r -d '' file; do
+            rel="${file#inputs/}"
+            dest="public/scenes/${rel}"
+            mkdir -p "$(dirname "$dest")"
+            cp "$file" "$dest"
+          done < <(find inputs -type f -iname '*.html' ! -path 'inputs/audio/*' -print0)
+
+          rm -rf public/audio
           if [ -d inputs/audio ]; then
             mkdir -p public/audio
             cp -r inputs/audio/. public/audio/
           fi
           echo "HTML files that will be rendered:"
-          find public/scenes -name '*.html' | sort
+          find public/scenes -type f -name '*.html' | sort
 
       - name: Render all HTML and TSX inputs
         env:
