@@ -55,6 +55,11 @@ jobs:
       - name: Ensure headless browser
         run: npx remotion browser ensure
 
+      - name: Check render script syntax
+        run: |
+          node --check scripts/scan-scenes.mjs
+          node --check scripts/render-all.mjs
+
       - name: Render all HTML and TSX inputs
         env:
           OVERWRITE: "1"
