@@ -1,6 +1,7 @@
 import React from 'react';
 import { Composition } from 'remotion';
 import { HtmlVideo } from './HtmlVideo';
+import { QuietExitComposition } from './QuietExitComposition';
 import { SCENES } from './scenes.generated';
 import { DURATION_IN_FRAMES, VIDEO } from './config';
 
@@ -47,6 +48,15 @@ export const RemotionRoot: React.FC = () => {
           }}
         />
       ))}
+
+      <Composition
+        id="react-video"
+        component={QuietExitComposition}
+        durationInFrames={DURATION_IN_FRAMES}
+        fps={VIDEO.fps}
+        width={VIDEO.width}
+        height={VIDEO.height}
+      />
 
       {SCENES.length === 0 ? (
         <Composition
