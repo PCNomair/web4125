@@ -1,6 +1,6 @@
-# web4125 — ماكينة تحويل HTML إلى فيديو
+# web4125 — ماكينة تحويل HTML وReact/TypeScript إلى فيديو
 
-ارفع ملف `.html` إلى مجلد **`inputs/`** → GitHub Actions يحوّله إلى فيديو MP4.
+ضع ملف `.html` أو مكوّن فيديو `.tsx` داخل **`inputs/`** → GitHub Actions يرندر كل ملف إلى MP4. ملفات React يجب أن تصدّر المكوّن افتراضيًا (`export default`).
 
 | المواصفات | القيمة |
 | --- | --- |
@@ -19,8 +19,9 @@
 ## الاستخدام اليومي
 
 ```
-inputs/1.html              →  output/1.mp4
-inputs/clips/sale.html     →  output/clips-sale.mp4
+inputs/1.html              →  out/1.mp4
+inputs/clips/sale.html     →  out/sale.mp4
+inputs/quiet-exit.tsx      →  out/react-quiet-exit.mp4
 inputs/audio/1.mp3         →  صوت اختياري لـ inputs/1.html
 ```
 
@@ -81,6 +82,30 @@ fonts/Tahoma-Bold.ttf   →  العائلة "Tahoma" عريض
 
 إذا كان ملفك مصمَّمًا على 1080×1920 مع وحدات نسبية (`vw`/`vmin`/`rem`)، اجعل
 `scale: 1` و`width: 1080`، `height: 1920`.
+
+---
+
+## فيديوهات React + TypeScript (`.tsx`)
+
+ضع كل فيديو React في `inputs/` بامتداد `.tsx`، واجعل المكوّن هو `default export`:
+
+```tsx
+import React from 'react';
+import { AbsoluteFill, useCurrentFrame } from 'remotion';
+
+const MyVideo: React.FC = () => {
+  const frame = useCurrentFrame();
+  return (
+    <AbsoluteFill style={{ background: '#101827', color: 'white', justifyContent: 'center', alignItems: 'center', fontSize: 64 }}>
+      Frame {frame}
+    </AbsoluteFill>
+  );
+};
+
+export default MyVideo;
+```
+
+ملفات HTML تحافظ على viewport بمقاس `540×960` وتُكبّر إلى `1080×1920`. أما ملفات TSX فتُرندر مباشرةً على `1080×1920` بدون تكبير ثانٍ، مع إعدادات الجودة نفسها (`H.264`, `CRF 14`, `yuv420p`). كل ملف `.tsx` داخل `inputs/` يصبح فيديو مستقلًا.
 
 ---
 
