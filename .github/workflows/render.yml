@@ -1,6 +1,6 @@
-name: Render HTML → MP4
+name: Render HTML + React TSX → MP4
 
-# ارفع ملف .html إلى inputs/ → تحصل على 1.mp4 في Releases + Artifacts.
+# ضع ملف .html أو .tsx داخل inputs/ → تحصل على MP4 في Releases + Artifacts.
 on:
   workflow_dispatch:
   push:
