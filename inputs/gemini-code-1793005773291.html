@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SOHO ALUMINIUM - Perfectly Calibrated 3D Reel</title>
+  
+  <!-- Architectural Luxury Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;600;700;800;900&family=Syne:wght@700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- GSAP 3 Animation Suite -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+  <style>
+    :root {
+      --bg-deep: #050608;
+      --bg-spot: #12141c;
+      --gold: #d4af6e;
+      --gold-light: #fae8be;
+      --gold-glow: rgba(212, 175, 110, 0.35);
+      --alabaster: #f9f9f7;
+      --muted: #828795;
+      --border-line: rgba(255, 255, 255, 0.08);
+      --laser: #38bdf8;
+      --door-w: 125px;
+      --door-h: 290px;
+      --door-d: 24px; /* مقياس واقعي لقطاع 120 ملم */
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      background: #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      font-family: 'Alexandria', sans-serif;
+      color: var(--alabaster);
+    }
+
+    /* 9:16 Vertical Screen Stage */
+    .reel-viewport {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      max-width: calc(100vh * 9 / 16);
+      max-height: 100vh;
+      aspect-ratio: 9 / 16;
+      background: radial-gradient(circle at 50% 28%, var(--bg-spot) 0%, var(--bg-deep) 88%);
+      overflow: hidden;
+      perspective: 1000px;
+      perspective-origin: 50% 48%;
+    }
+
+    /* إضاءة بيئية سينمائية */
+    .ambient-light {
+      position: absolute;
+      top: -15%;
+      left: 10%;
+      width: 80%;
+      height: 60%;
+      background: radial-gradient(circle, rgba(212, 175, 110, 0.14) 0%, transparent 65%);
+      filter: blur(50px);
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    /* خطوط الإطار والعلامات المعمارية */
+    .frame-border {
+      position: absolute;
+      inset: 4%;
+      border: 1px solid var(--border-line);
+      border-radius: 16px;
+      pointer-events: none;
+      z-index: 80;
+    }
+    .corner-mark {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      border: 1.5px solid var(--gold);
+      pointer-events: none;
+      z-index: 81;
+    }
+    .c-tl { top: 4%; left: 4%; border-right: none; border-bottom: none; }
+    .c-tr { top: 4%; right: 4%; border-left: none; border-bottom: none; }
+    .c-bl { bottom: 4%; left: 4%; border-right: none; border-top: none; }
+    .c-br { bottom: 4%; right: 4%; border-left: none; border-top: none; }
+
+    /* الهيدر العلوي لشعار الشركة */
+    .brand-top {
+      position: absolute;
+      top: 6.2%;
+      left: 0;
+      width: 100%;
+      text-align: center;
+      z-index: 75;
+      pointer-events: none;
+    }
+    .brand-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 17px;
+      font-weight: 900;
+      letter-spacing: 5px;
+      color: var(--alabaster);
+      text-transform: uppercase;
+    }
+    .brand-sub {
+      font-size: 8.5px;
+      letter-spacing: 2px;
+      color: var(--gold);
+      margin-top: 3px;
+      font-weight: 400;
+    }
+
+    /* ==============================================================
+       المشهد 1: الهوك والمقارنة الأولية (توسيط كامل داخل منطقة الأمان)
+       ============================================================== */
+    .scene-hook {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 14% 8%;
+      opacity: 0;
+      visibility: hidden;
+      z-index: 60;
+      text-align: center;
+    }
+    .hook-pill {
+      border: 1px solid var(--gold);
+      color: var(--gold-light);
+      font-family: 'Syne', sans-serif;
+      font-size: 9px;
+      font-weight: 800;
+      padding: 5px 18px;
+      border-radius: 30px;
+      letter-spacing: 2px;
+      margin-bottom: 18px;
+      background: rgba(212, 175, 110, 0.12);
+      box-shadow: 0 0 18px var(--gold-glow);
+    }
+    .hook-title {
+      font-size: 24px;
+      font-weight: 900;
+      line-height: 1.4;
+      color: var(--alabaster);
+      max-width: 320px;
+    }
+    .hook-title span {
+      background: linear-gradient(135deg, var(--gold-light), var(--gold));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .comparison-rig {
+      margin-top: 32px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 36px;
+      height: 185px;
+      width: 100%;
+      position: relative;
+    }
+    .laser-line {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--laser), transparent);
+      box-shadow: 0 0 16px var(--laser);
+      z-index: 20;
+      opacity: 0;
+    }
+    .door-unit {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .standard-door {
+      width: 44px;
+      height: 78px;
+      border: 1.5px dashed #474b57;
+      border-radius: 3px;
+      position: relative;
+    }
+    .standard-door::after {
+      content: '';
+      position: absolute;
+      right: 4px;
+      top: 50%;
+      width: 3px;
+      height: 6px;
+      background: #474b57;
+    }
+    .soho-door-preview {
+      width: 76px;
+      height: 175px;
+      border: 1.5px solid var(--gold);
+      background: linear-gradient(135deg, #1c202a, #111318);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.85);
+      border-radius: 3px;
+      position: relative;
+      overflow: hidden;
+    }
+    .soho-door-preview::after {
+      content: '';
+      position: absolute;
+      right: 14px;
+      top: -5px;
+      bottom: -5px;
+      width: 1px;
+      background: var(--gold-light);
+    }
+    .door-caption {
+      font-size: 10px;
+      margin-top: 8px;
+      color: var(--muted);
+      font-family: 'Syne', sans-serif;
+      letter-spacing: 1px;
+    }
+    .door-caption.active {
+      color: var(--gold-light);
+      font-weight: 700;
+    }
+
+    /* ==============================================================
+       CAMERA RIG & 3D MONOLITH
+       ============================================================== */
+    .camera-crane {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transform-style: preserve-3d;
+      will-change: transform;
+      z-index: 20;
+    }
+
+    .camera-rot {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transform-style: preserve-3d;
+      will-change: transform;
+    }
+
+    .world-space {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transform-style: preserve-3d;
+    }
+
+    .floor-plane {
+      position: absolute;
+      width: 380px;
+      height: 380px;
+      background: radial-gradient(circle, rgba(212, 175, 110, 0.08) 0%, transparent 68%);
+      border: 1px dashed rgba(255, 255, 255, 0.05);
+      border-radius: 50%;
+      transform: translateY(160px) rotateX(90deg);
+      transform-style: preserve-3d;
+      pointer-events: none;
+      opacity: 0.7;
+    }
+
+    .monolith-door-container {
+      position: absolute;
+      width: var(--door-w);
+      height: var(--door-h);
+      transform-style: preserve-3d;
+      opacity: 0;
+      visibility: hidden;
+      transform-origin: calc(var(--door-w) * 0.80) 50% 0;
+      margin-top: 15px;
+    }
+
+    .face {
+      position: absolute;
+      backface-visibility: visible;
+      transform-style: preserve-3d;
+    }
+
+    .face-front {
+      width: var(--door-w);
+      height: var(--door-h);
+      background: linear-gradient(145deg, #1d212a 0%, #0c0e13 100%);
+      border: 1.5px solid rgba(212, 175, 110, 0.45);
+      box-shadow: inset 0 0 25px rgba(0,0,0,0.7);
+      transform: translateZ(calc(var(--door-d) / 2));
+      overflow: hidden;
+    }
+    .face-front::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(90deg, transparent, transparent 3px, rgba(255,255,255,0.015) 3px, rgba(255,255,255,0.015) 5px);
+    }
+    .face-front::after {
+      content: '';
+      position: absolute;
+      top: -60%;
+      left: -60%;
+      width: 220%;
+      height: 220%;
+      background: linear-gradient(65deg, transparent 40%, rgba(255, 255, 255, 0.12) 50%, transparent 60%);
+      transform: rotate(20deg);
+      animation: sweepSheen 4s infinite;
+    }
+
+    .face-back {
+      width: var(--door-w);
+      height: var(--door-h);
+      background: #101217;
+      border: 1.5px solid rgba(212, 175, 110, 0.3);
+      transform: rotateY(180deg) translateZ(calc(var(--door-d) / 2));
+    }
+
+    .face-left {
+      width: var(--door-d);
+      height: var(--door-h);
+      left: calc(var(--door-d) / -2);
+      background: linear-gradient(to right, #101217, #191c24);
+      border-top: 1.5px solid rgba(212, 175, 110, 0.4);
+      border-bottom: 1.5px solid rgba(212, 175, 110, 0.4);
+      border-left: 1.5px solid rgba(212, 175, 110, 0.6);
+      transform: rotateY(-90deg);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .edge-groove {
+      position: absolute;
+      width: 2px;
+      height: 94%;
+      background: rgba(212, 175, 110, 0.45);
+      box-shadow: 0 0 8px rgba(212, 175, 110, 0.6);
+    }
+    .face-left-label {
+      transform: rotate(90deg);
+      font-family: 'Syne', sans-serif;
+      font-size: 8px;
+      font-weight: 800;
+      letter-spacing: 2.5px;
+      color: var(--gold-light);
+      white-space: nowrap;
+    }
+
+    .face-right {
+      width: var(--door-d);
+      height: var(--door-h);
+      right: calc(var(--door-d) / -2);
+      background: #0f1116;
+      border: 1px solid rgba(212, 175, 110, 0.2);
+      transform: rotateY(90deg);
+    }
+
+    .face-top {
+      width: var(--door-w);
+      height: var(--door-d);
+      top: calc(var(--door-d) / -2);
+      background: #181a22;
+      border: 1px solid rgba(212, 175, 110, 0.3);
+      transform: rotateX(90deg);
+    }
+    .face-bottom {
+      width: var(--door-w);
+      height: var(--door-d);
+      bottom: calc(var(--door-d) / -2);
+      background: #08090d;
+      border: 1px solid rgba(212, 175, 110, 0.3);
+      transform: rotateX(-90deg);
+    }
+
+    .handle-bar-3d {
+      position: absolute;
+      left: 14px;
+      top: 15%;
+      width: 4px;
+      height: 70%;
+      background: linear-gradient(to bottom, var(--gold-light), var(--gold));
+      box-shadow: 0 0 12px var(--gold-glow);
+      border-radius: 2px;
+      transform: translateZ(5px);
+    }
+
+    .pivot-axis-pin {
+      position: absolute;
+      left: calc(var(--door-w) * 0.80);
+      width: 12px;
+      height: 16px;
+      background: linear-gradient(135deg, var(--gold-light), var(--gold));
+      border-radius: 3px;
+      transform: translateX(-50%);
+      box-shadow: 0 0 14px var(--gold-light);
+      z-index: 10;
+    }
+    .pin-top { top: -14px; }
+    .pin-bottom { bottom: -14px; }
+
+    /* بادجات القياس المعمارية HUD */
+    .hud-stage {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 45;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .spatial-badge {
+      position: absolute;
+      font-family: 'Syne', sans-serif;
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--gold-light);
+      letter-spacing: 1.5px;
+      background: rgba(10, 12, 18, 0.94);
+      border: 1px solid var(--gold);
+      padding: 5px 12px;
+      border-radius: 6px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.8), 0 0 15px rgba(212, 175, 110, 0.25);
+      white-space: nowrap;
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    .badge-height {
+      top: 48%;
+      right: 10%;
+    }
+    .badge-thickness {
+      top: 50%;
+      left: 10%;
+    }
+
+    /* نصوص المشهد الثالث (Macro Overlay) */
+    .kinetic-macro-card {
+      position: absolute;
+      top: 15%;
+      width: 100%;
+      padding: 0 8%;
+      text-align: center;
+      opacity: 0;
+      z-index: 60;
+      pointer-events: none;
+    }
+    .macro-h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: 22px;
+      font-weight: 900;
+      color: var(--alabaster);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      line-height: 1.2;
+    }
+    .macro-h2 {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--gold);
+      margin-top: 5px;
+      letter-spacing: 0.5px;
+    }
+
+    /* ==============================================================
+       المشهد 4: الخاتمة و الـ CTA (توسيط كامل ومحكم في منتصف الشاشة)
+       ============================================================== */
+    .outro-view {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 14% 8%;
+      text-align: center;
+      opacity: 0;
+      visibility: hidden;
+      z-index: 70;
+    }
+    .outro-title {
+      font-size: 25px;
+      font-weight: 900;
+      line-height: 1.4;
+      margin-bottom: 12px;
+      color: var(--alabaster);
+      max-width: 320px;
+    }
+    .outro-title span {
+      background: linear-gradient(135deg, var(--gold-light), var(--gold));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .outro-sub {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.7;
+      margin-bottom: 24px;
+      max-width: 300px;
+    }
+    .contact-box {
+      border: 1px solid var(--gold);
+      padding: 11px 28px;
+      border-radius: 40px;
+      background: rgba(212, 175, 110, 0.12);
+      margin-bottom: 14px;
+      box-shadow: 0 0 25px rgba(212, 175, 110, 0.25);
+    }
+    .phone-text {
+      font-family: 'Syne', sans-serif;
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--gold-light);
+      letter-spacing: 2px;
+      direction: ltr;
+      display: inline-block;
+    }
+    .social-tag {
+      font-family: 'Syne', sans-serif;
+      font-size: 10.5px;
+      letter-spacing: 2px;
+      color: var(--alabaster);
+      opacity: 0.8;
+    }
+
+    /* شريط الترجمة الصوتي السفلي المنسق */
+    .caption-deck {
+      position: absolute;
+      bottom: 6.5%;
+      left: 0;
+      width: 100%;
+      padding: 0 8%;
+      text-align: center;
+      z-index: 85;
+      min-height: 48px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      pointer-events: none;
+    }
+    .caption-line {
+      font-size: 13.5px;
+      font-weight: 500;
+      color: var(--alabaster);
+      line-height: 1.6;
+      opacity: 0;
+      transform: translateY(6px);
+      text-shadow: 0 2px 10px rgba(0,0,0,0.95);
+    }
+
+    @keyframes sweepSheen {
+      0% { transform: rotate(20deg) translateX(-130%); }
+      40%, 100% { transform: rotate(20deg) translateX(130%); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="reel-viewport" id="viewport">
+    <div class="ambient-light"></div>
+    <div class="frame-border"></div>
+    <div class="corner-mark c-tl"></div>
+    <div class="corner-mark c-tr"></div>
+    <div class="corner-mark c-bl"></div>
+    <div class="corner-mark c-br"></div>
+
+    <!-- الهيدر الرسمي للعلامة -->
+    <div class="brand-top">
+      <div class="brand-title">SOHO ALUMINIUM</div>
+      <div class="brand-sub">PIVOT ARCHITECTURAL SYSTEMS</div>
+    </div>
+
+    <!-- المشهد الأول: الهوك والمقارنة الأولية (متمركز في المنتصف تماماً) -->
+    <div class="scene-hook" id="scene1">
+      <div class="hook-pill">THE ARCHITECTURAL SHIFT</div>
+      <div class="hook-title">
+        ليش كبار المعماريين.. بطّلوا يركبوا <span>أبواب تقليدية؟</span>
+      </div>
+      
+      <div class="comparison-rig" id="compareRig">
+        <div class="laser-line" id="laserLine"></div>
+        <div class="door-unit">
+          <div class="standard-door"></div>
+          <div class="door-caption">باب عادي 2.1M</div>
+        </div>
+        <div class="door-unit">
+          <div class="soho-door-preview"></div>
+          <div class="door-caption active">SOHO 8.0M PIVOT</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- كاميرا الموشن 3D ومجسم الباب الحجمي -->
+    <div class="camera-crane" id="cameraCrane">
+      <div class="camera-rot" id="cameraRot">
+        <div class="world-space" id="worldSpace">
+          
+          <div class="floor-plane"></div>
+
+          <div class="monolith-door-container" id="pivotDoor">
+            <div class="face face-front">
+              <div class="handle-bar-3d"></div>
+            </div>
+            <div class="face face-back"></div>
+            <div class="face face-left">
+              <div class="edge-groove"></div>
+              <span class="face-left-label">120MM PROFILE</span>
+            </div>
+            <div class="face face-right"></div>
+            <div class="face face-top"></div>
+            <div class="face face-bottom"></div>
+
+            <div class="pivot-axis-pin pin-top"></div>
+            <div class="pivot-axis-pin pin-bottom"></div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- طبقة الـ HUD للبادجات الثابتة -->
+    <div class="hud-stage">
+      <div class="spatial-badge badge-height" id="badgeHeight">8.00M HEIGHT</div>
+      <div class="spatial-badge badge-thickness" id="badgeThick">120MM SOLID CORE</div>
+    </div>
+
+    <!-- نصوص المشهد الثالث (Macro Overlay) -->
+    <div class="kinetic-macro-card" id="macroCard">
+      <div class="macro-h1" id="macroH1">SOLID ALUMINIUM</div>
+      <div class="macro-h2" id="macroH2">سماكة 120 ملم • متانة متناهية وعزل تام</div>
+    </div>
+
+    <!-- المشهد الرابع: الخاتمة والدعوة للإجراء (متمركز في المنتصف تماماً) -->
+    <div class="outro-view" id="scene4">
+      <div class="outro-title">
+        فخامة مشروعك.. تبدأ من <span>المدخل.</span>
+      </div>
+      <div class="outro-sub">
+        سوهو للألمنيوم والزجاج.. نصنع تفاصيل تليق بالمشاريع الاستثنائية.
+      </div>
+      <div class="contact-box">
+        <div class="phone-text">056 777 7020</div>
+      </div>
+      <div class="social-tag">@SOHO.ALUMINUM • UAE</div>
+    </div>
+
+    <!-- شريط الترجمة الصوتي السفلي -->
+    <div class="caption-deck">
+      <div class="caption-line" id="captionLine"></div>
+    </div>
+  </div>
+
+  <script>
+    const captionLine = document.getElementById('captionLine');
+    const masterTl = gsap.timeline({ repeat: -1 });
+
+    function setCaption(text) {
+      gsap.to(captionLine, {
+        opacity: 0,
+        y: -4,
+        duration: 0.2,
+        onComplete: () => {
+          captionLine.textContent = text;
+          gsap.to(captionLine, { opacity: 1, y: 0, duration: 0.4 });
+        }
+      });
+    }
+
+    // حركة كاميرا تنفسية سينمائية لطيفة
+    gsap.to("#cameraCrane", {
+      y: "+=4",
+      x: "-=2",
+      duration: 3.5,
+      repeat: -1,
+      yoyo: true,
+      ease: "sine.inOut"
+    });
+
+    // ==============================================================
+    // المخطط الزمني الكامل للفيديو
+    // ==============================================================
+
+    // --- PHASE 1: الهوك والمقارنة الأولية (0s - 4.2s) ---
+    masterTl.set("#scene1", { autoAlpha: 1 })
+      .set("#cameraCrane", { x: 0, y: 0, z: 0 })
+      .set("#cameraRot", { rotationX: 0, rotationY: 0, rotationZ: 0 })
+      .call(() => setCaption("ليش كبار المعماريين.. بطّلوا يركبوا أبواب تقليدية؟"))
+      .fromTo("#scene1 .hook-pill", { opacity: 0, y: -10 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" })
+      .fromTo("#scene1 .hook-title", { opacity: 0, scale: 0.94 }, { opacity: 1, scale: 1, duration: 0.7, ease: "back.out(1.4)" }, "-=0.2")
+      .fromTo("#compareRig", { opacity: 0, scale: 0.92 }, { opacity: 1, scale: 1, duration: 0.6, ease: "power3.out" }, "-=0.3")
+      .fromTo("#laserLine", { top: "0%", opacity: 1 }, { top: "100%", duration: 1.3, ease: "sine.inOut" })
+      .to("#laserLine", { opacity: 0, duration: 0.2 })
+      .to("#scene1", { autoAlpha: 0, duration: 0.4, delay: 1.2 });
+
+    // --- PHASE 2: ظهور الباب ثلاثي الأبعاد بارتفاع 8 أمتار (4.2s - 9.0s) ---
+    masterTl.set("#pivotDoor", { autoAlpha: 1 })
+      .call(() => setCaption("أبواب محورية بارتفاعات تصل لـ 8 أمتار، وتتحرك بلمسة يد."))
+      .set("#cameraCrane", { x: 0, y: 25, z: -50 })
+      .set("#cameraRot", { rotationX: 10, rotationY: -10, rotationZ: 0 })
+      .set("#pivotDoor", { rotateY: 0, opacity: 0 })
+      
+      .to("#pivotDoor", { opacity: 1, duration: 0.6 }, "<")
+      .to("#cameraCrane", {
+        x: -12,
+        y: 0,
+        z: 0,
+        duration: 3.0,
+        ease: "power2.inOut"
+      }, "<")
+      .to("#cameraRot", {
+        rotationX: -2,
+        rotationY: 10,
+        duration: 3.0,
+        ease: "power2.inOut"
+      }, "<")
+      .to("#pivotDoor", {
+        rotateY: -55,
+        duration: 2.8,
+        ease: "power3.out"
+      }, "<+=0.2")
+      .to("#badgeHeight", { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" }, "-=1.4")
+      .to("#badgeHeight", { opacity: 0, y: -6, duration: 0.3 }, "+=0.8");
+
+    // --- PHASE 3: استعراض سماكة 120 ملم بفوكس سينمائي (9.0s - 14.2s) ---
+    masterTl.call(() => setCaption("سماكة 120 ملم من الألمنيوم المصمت.. متانة فائقة وعزل متكامل."))
+      .to("#cameraCrane", {
+        x: 24,
+        y: 12,
+        z: 95,
+        duration: 1.5,
+        ease: "power3.inOut"
+      })
+      .to("#cameraRot", {
+        rotationX: 4,
+        rotationY: -12,
+        duration: 1.5,
+        ease: "power3.inOut"
+      }, "<")
+      .to("#pivotDoor", {
+        rotateY: -72,
+        duration: 1.5,
+        ease: "power3.inOut"
+      }, "<")
+      .to("#badgeThick", { opacity: 1, y: 0, duration: 0.4 }, "-=0.3")
+      .to("#macroCard", { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, "-=0.4")
+      
+      .to("#cameraCrane", {
+        y: 22,
+        x: 18,
+        duration: 2.2,
+        ease: "sine.inOut"
+      }, "+=0.2")
+      .call(() => {
+        document.getElementById('macroH1').textContent = "SMOOTH HYDRAULIC PIVOT";
+        document.getElementById('macroH2').textContent = "حركة هيدروليكية ذكية وانسيابية بدون جهد";
+      })
+      .to(["#badgeThick", "#macroCard"], { opacity: 0, duration: 0.35, delay: 1.4 });
+
+    // --- PHASE 4: الخاتمة والدعوة للإجراء (14.2s - 19.5s) ---
+    masterTl.call(() => setCaption("سوهو للألمنيوم.. فخامة مشروعك تبدأ من المدخل."))
+      .to("#cameraCrane", {
+        x: 0,
+        y: 0,
+        z: -30,
+        duration: 1.5,
+        ease: "power3.out"
+      })
+      .to("#cameraRot", {
+        rotationX: 0,
+        rotationY: -8,
+        rotationZ: 0,
+        duration: 1.5,
+        ease: "power3.out"
+      }, "<")
+      .to("#pivotDoor", {
+        rotateY: -18,
+        duration: 1.6,
+        ease: "power2.out"
+      }, "<")
+      .to("#pivotDoor", { autoAlpha: 0, duration: 0.5 }, "+=0.4")
+      .set("#scene4", { autoAlpha: 1 })
+      .fromTo("#scene4 .outro-title", 
+        { opacity: 0, y: 14 },
+        { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }
+      )
+      .fromTo("#scene4 .outro-sub", 
+        { opacity: 0, y: 10 },
+        { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" },
+        "-=0.3"
+      )
+      .fromTo("#scene4 .contact-box", 
+        { scale: 0.88, opacity: 0 },
+        { scale: 1, opacity: 1, duration: 0.6, ease: "back.out(1.8)" },
+        "-=0.2"
+      )
+      .fromTo("#scene4 .social-tag",
+        { opacity: 0 },
+        { opacity: 0.8, duration: 0.4 },
+        "-=0.2"
+      )
+      .to("#scene4", { autoAlpha: 0, duration: 0.5, delay: 2.2 });
+  </script>
+</body>
+</html>
